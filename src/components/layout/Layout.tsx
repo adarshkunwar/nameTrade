@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom'
 
 const Layout = () => {
   return (
-    <div className="w-screen h-screen overflow-hidden">
+    <div className="w-screen h-screen ">
       <Header />
       <Outlet />
     </div>
