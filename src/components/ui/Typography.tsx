@@ -54,7 +54,7 @@ const Heading = ({ variant, icon, title, disabled, color, fontWeight = 400, onCl
   const textTag = HEADING_TAGS.includes(variant) ? variant : 'span'
   const Component = textTag as keyof JSX.IntrinsicElements
 
-  const baseStyles = 'flex justify-start items-center'
+  const baseStyles = 'flex justify-start items-center text-balance'
   const variantStyle = variantStyles[variant] || variantStyles.span
   const fontWeightStyle = fontWeightStyles[fontWeight] || 'font-normal'
   const cursorStyle = onClick ? 'cursor-pointer' : ''
