@@ -23,7 +23,7 @@ const Search = ({ submitFunction }: { submitFunction: SubmitHandler<TFormInput> 
         <div className="w-full">
           <TextField name="search" placeholder="Enter a Username" customLabel="" type="search" />
         </div>
-        <button type="submit">Search</button>
+        {/* <button type="submit">Search</button> */}
       </form>
     </FormProvider>
   )
