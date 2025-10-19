@@ -1,8 +1,9 @@
+import { useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import Table from '@/components/ui/Table'
 import { Spinner } from '@/components/ui/Spinner'
 import Shimmer from '@/components/ui/Shimmer'
 import type { TUsername } from '../types/username'
-import { cn } from '@/lib/utils'
 import { CONSTANTS } from '../constant/data.const'
 import Heading from '@/components/ui/Typography'
 import { shorten } from '@/utils/username'
@@ -33,7 +34,19 @@ const COLUMNS = [
     header: 'Owner',
     cell: ({ row }: any) => (
       <div className="flex flex-col gap-0.5">
-        <div className="font-semibold text-white">{shorten(row.original.ownerAddress)}</div>
+        {row.original.ownerAddress && row.original.ownerAddress !== '—' ? (
+          <>
+            <Link
+              to={`/profile/${row.original.ownerAddress}`}
+              className="font-semibold text-white transition-colors hover:text-primary"
+            >
+              {shorten(row.original.ownerAddress)}
+            </Link>
+            <span className="text-xs text-gray-400">{row.original.ownerAddress}</span>
+          </>
+        ) : (
+          <div className="font-semibold text-white">{shorten(row.original.ownerAddress)}</div>
+        )}
       </div>
     ),
   },
@@ -51,6 +64,31 @@ const AllUsernamesTable = ({
 }: AllUsernamesTableProps) => {
   const showSkeleton = isLoading && data.length === 0
   const showEmpty = !isLoading && !error && data.length === 0
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!onLoadMore || !canLoadMore || isFetchingNextPage) return
+
+    const target = loadMoreRef.current
+    if (!target) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const isIntersecting = entries.some((entry) => entry.isIntersecting)
+        if (isIntersecting) {
+          observer.disconnect()
+          void onLoadMore()
+        }
+      },
+      { root: null, rootMargin: '0px', threshold: 0.1 }
+    )
+
+    observer.observe(target)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [onLoadMore, canLoadMore, isFetchingNextPage])
 
   return (
     <div className="rounded-md border border-header ">
@@ -82,20 +120,11 @@ const AllUsernamesTable = ({
 
       {showEmpty && !isLoading && !error && data.length === 0 && <p>No usernames available right now.</p>}
 
-      {onLoadMore && (canLoadMore || isFetchingNextPage) && (
-        <div className="mt-4 flex justify-end">
-          <button
-            type="button"
-            onClick={onLoadMore}
-            disabled={!canLoadMore || isFetchingNextPage}
-            className={cn(
-              'flex items-center gap-2 rounded border border-primary px-4 py-2 text-sm text-white transition-colors',
-              canLoadMore && !isFetchingNextPage ? 'hover:bg-primary/20' : 'cursor-not-allowed opacity-70'
-            )}
-          >
-            {isFetchingNextPage && <Spinner size="sm" />}
-            <span>{canLoadMore ? 'Load more' : 'No more results'}</span>
-          </button>
+      {onLoadMore && canLoadMore && <div ref={loadMoreRef} className="h-1" />}
+
+      {isFetchingNextPage && (
+        <div className="flex justify-center py-6">
+          <Spinner />
         </div>
       )}
     </div>

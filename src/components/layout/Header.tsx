@@ -30,14 +30,30 @@ const Header = () => {
     navigate('/login')
   }, [navigate])
 
+  const handleNavigateHome = useCallback(() => {
+    navigate('/')
+  }, [navigate])
+
+  const handleNavigateToProfile = useCallback(() => {
+    if (address) {
+      navigate(`/profile/${address}`)
+    }
+  }, [address, navigate])
+
   return (
     <header className="bg-header py-4 px-8 flex justify-between items-center sticky top-0 z-10">
-      <Heading variant="h1" title="NameTrade" color="white" fontWeight={700} />
-      <div className="flex items-center gap-6 text-sm">
-        <div className="flex flex-col items-end">
-          <span className="text-xs uppercase tracking-wide text-[#9BA9C9]">Status</span>
-          <span className="text-sm font-semibold text-white">{displayName}</span>
-        </div>
+      <Heading variant="h1" title="NameTrade" color="white" fontWeight={700} onClick={handleNavigateHome} />
+      <div className="flex items-center gap-4 text-sm">
+        <span className="text-sm font-semibold text-white">{displayName}</span>
+        {isAuthenticated && address ? (
+          <button
+            type="button"
+            onClick={handleNavigateToProfile}
+            className="rounded-full border border-white/30 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition hover:border-white/60 hover:bg-white/10"
+          >
+            My Profile
+          </button>
+        ) : null}
         {isAuthenticated ? (
           <button
             type="button"
