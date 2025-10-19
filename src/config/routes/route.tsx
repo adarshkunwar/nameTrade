@@ -1,10 +1,10 @@
 import { Suspense, lazy, useEffect } from 'react'
-import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import ProtectedRoute from './protectedRoutes'
+import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/config/store'
 import { RouteList } from './routesList'
 import Layout from '@/components/layout/Layout'
+import { AuthGuard } from './protectedRoutes'
 
 const Login = lazy(() => import('@/features/auth'))
 
@@ -40,7 +40,13 @@ const RoutesContainer = () => {
         <Route path="/" element={<Layout />}>
           {renderRoutes(RouteList)}
         </Route>
-        <Route element={<ProtectedRoute isAuthenticated={true} />}>
+        <Route
+          element={
+            <AuthGuard>
+              <Outlet />
+            </AuthGuard>
+          }
+        >
           <Route path="*" element={<Navigate to="/page-not-found" replace />} />
         </Route>
       </Routes>

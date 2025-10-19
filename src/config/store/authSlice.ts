@@ -5,7 +5,6 @@ interface AuthState {
   guestToken: string | null
   isAuthenticated: boolean
   user_id: string | null
-  displayName: string | null
   address: string | null
   signature: string | null
   authMessage: string | null
@@ -38,7 +37,6 @@ const initialState: AuthState = {
   authMethod: parseStoredJson<'base' | 'mock'>(encryptedLocalStorage.getItem('auth_method')),
   status: 'idle',
   error: null,
-  displayName: '',
 }
 
 const TokenSlice = createSlice({
@@ -90,6 +88,7 @@ const TokenSlice = createSlice({
         state.user_id = user_id
         encryptedLocalStorage.setItem('user_id', JSON.stringify(user_id))
       }
+
       if (address !== undefined) {
         state.address = address
         if (address) {
