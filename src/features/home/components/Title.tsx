@@ -1,4 +1,4 @@
-import Heading from '@/components/ui/Typography'
+import Heading from '@ui/Typography'
 
 const Title = ({ mainheading, subHeading }: { mainheading: string; subHeading: string }) => {
   return (
