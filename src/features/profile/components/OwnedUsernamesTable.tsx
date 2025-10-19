@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import Table from '@/components/ui/Table'
 import Heading from '@/components/ui/Typography'
 import Shimmer from '@/components/ui/Shimmer'
@@ -38,7 +39,13 @@ const OwnedUsernamesTable = ({
         header: 'Username',
         cell: ({ row }: any) => (
           <div className="flex flex-col gap-1">
-            <span className="font-semibold text-white">@{row.original.username.split('.base')[0]}</span>
+            <Link
+              to={`/username/${row.original.tokenId}`}
+              state={{ username: row.original.username }}
+              className="font-semibold text-white transition hover:text-primary"
+            >
+              @{row.original.username.split('.base')[0]}
+            </Link>
             <span className="text-xs text-gray-400">{row.original.username}</span>
           </div>
         ),

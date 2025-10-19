@@ -1,11 +1,10 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import Heading from '../ui/Typography'
 import type { RootState } from '@/config/store'
 import { clearAuthToken } from '@/config/store/authSlice'
 import { useBaseAuth } from '@/hooks/auth/useBaseAuth'
-import { shorten } from '@/utils/username'
 
 const Header = () => {
   const dispatch = useDispatch()
@@ -13,13 +12,6 @@ const Header = () => {
   const { signInWithBase, isLoading: isSigningIn, error: signInError } = useBaseAuth()
 
   const { isAuthenticated, address } = useSelector((state: RootState) => state.auth)
-
-  const displayName = useMemo(() => {
-    if (address) {
-      return shorten(address)
-    }
-    return 'Guest'
-  }, [address])
 
   const handleSignOut = useCallback(() => {
     dispatch(clearAuthToken())
@@ -43,7 +35,7 @@ const Header = () => {
     <header className="bg-header py-4 px-8 flex justify-between items-center sticky top-0 z-10">
       <Heading variant="h1" title="NameTrade" color="white" fontWeight={700} onClick={handleNavigateHome} />
       <div className="flex items-center gap-4 text-sm">
-        <span className="text-sm font-semibold text-white">{displayName}</span>
+      
         {isAuthenticated && address ? (
           <button
             type="button"

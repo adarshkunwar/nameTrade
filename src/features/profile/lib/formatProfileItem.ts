@@ -22,7 +22,6 @@ export const formatProfileItem = (item: ProfileItem): TProfileUsername | null =>
   const username = item.name?.trim() || `#${item.tokenId}`
   const collectionSlug = item.collection?.slug ?? 'unknown'
   const collectionName = item.collection?.name?.trim() || collectionSlug
-
   return {
     id: item.id,
     username,

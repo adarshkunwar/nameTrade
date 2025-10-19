@@ -225,7 +225,6 @@ export const PROFILE_ITEMS_LIST_QUERY = `
     id
     name
     tokenId
-    tokenUri
     contractAddress
     chain {
       name

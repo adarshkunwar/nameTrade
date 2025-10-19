@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Tabs } from '@/components/ui/Tabs'
 import Title from './components/Title'
 import { CONSTANTS } from './constant/data.const'
@@ -11,6 +12,7 @@ import { useCollectionItems, useSearchCollectionItems } from './hooks/useCollect
 import type { TUsername } from './types/username'
 
 const Home = () => {
+  const navigate = useNavigate()
   const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => {
     const data = TABLE_DATA[0]
     return {
@@ -57,9 +59,17 @@ const Home = () => {
     setSearchTerm(value)
   }, [])
 
-  const handleResultSelect = useCallback((result: TUsername) => {
-    setSearchTerm(result.username)
-  }, [])
+  const handleResultSelect = useCallback(
+    (result: TUsername) => {
+      setSearchTerm('')
+      navigate(`/username/${result.tokenId}`, {
+        state: {
+          username: result.username,
+        },
+      })
+    },
+    [navigate]
+  )
 
   const handleLoadMoreUsernames = useCallback(() => {
     if (hasMoreAllUsernames) {

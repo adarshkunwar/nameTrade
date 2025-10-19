@@ -42,13 +42,21 @@ const AllUsernamesTable = ({
       {
         accessorKey: 'username',
         header: 'Username',
-        cell: ({ row }: any) => (
-          <div className="flex flex-col gap-1">
-            <div className="font-semibold text-white">
-              @{shorten(row.original.username.split('.base')[0])}
+        cell: ({ row }: any) => {
+          const usernameValue = row.original.username
+          const display = `@${usernameValue.split('.base')[0]}`
+          return (
+            <div className="flex flex-col gap-1">
+              <Link
+                to={`/username/${row.original.tokenId}`}
+                state={{ username: usernameValue }}
+                className="font-semibold text-white transition hover:text-primary"
+              >
+                {display}
+              </Link>
             </div>
-          </div>
-        ),
+          )
+        },
       },
       {
         accessorKey: 'ownerAddress',
