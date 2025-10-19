@@ -42,9 +42,11 @@ export const TextField: FC<TextFieldProps> = ({
       control={control}
       render={({ field, fieldState: { error } }) => (
         <>
-          <label className="font-bold block mb-6 text-white">
-            {customLabel} {required ? <span style={{ color: '#FF1943' }}>*</span> : ''}
-          </label>
+          {customLabel ? (
+            <label className="mb-6 block font-bold text-white">
+              {customLabel} {required ? <span style={{ color: '#FF1943' }}>*</span> : ''}
+            </label>
+          ) : null}
           <div className="flex items-center w-full bg-primary p-4 rounded-md gap-8">
             <Icon />
             <input
