@@ -37,9 +37,9 @@ const TableData = ({ data }: { data: any[] }) => {
   ]
 
   return (
-    <div className=" min-h-screen">
-      <div className="mx-auto flex flex-col gap-2">
-        <Heading variant="h3" title={CONSTANTS.TABLE.HEADING} color="white" fontWeight={700} />
+    <div className="flex flex-col gap-3">
+      <Heading variant="h3" title={CONSTANTS.TABLE.HEADING} color="white" fontWeight={700} />
+      <div className="rounded-md border border-header bg-header/40 p-4">
         <Table data={data} columns={columns} />
       </div>
     </div>
