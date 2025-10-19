@@ -1,0 +1,6 @@
+export const ENV = {
+  VITE_APP_API_URL: import.meta.env.VITE_APP_API_URL,
+  VITE_COLLECTION_ITEMS_ENDPOINT: import.meta.env.VITE_COLLECTION_ITEMS_ENDPOINT,
+  VITE_SECRET_KEY: import.meta.env.VITE_SECRET_KEY,
+  VITE_SUFFIX: import.meta.env.VITE_SUFFIX,
+}
