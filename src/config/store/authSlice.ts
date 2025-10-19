@@ -8,7 +8,7 @@ interface AuthState {
   address: string | null
   signature: string | null
   authMessage: string | null
-  authMethod: 'base' | 'mock' | null
+  authMethod: 'base' | null
   status: 'idle' | 'loading' | 'authenticated' | 'error'
   error: string | null
 }
@@ -26,15 +26,24 @@ const parseStoredJson = <T>(value: string | null): T | null => {
   }
 }
 
+const storedAuthMethod = parseStoredJson<'base' | 'mock'>(encryptedLocalStorage.getItem('auth_method'))
+const storedIsAuthenticated = Boolean(encryptedLocalStorage.getItem('isAuthenticated'))
+const isPreviewAuth = storedAuthMethod === 'mock'
+
+if (isPreviewAuth) {
+  encryptedLocalStorage.removeItem('auth_method')
+  encryptedLocalStorage.removeItem('isAuthenticated')
+}
+
 const initialState: AuthState = {
   accessToken: encryptedLocalStorage.getItem('accessToken') ?? null,
   guestToken: encryptedLocalStorage.getItem('guestToken') ?? null,
-  isAuthenticated: encryptedLocalStorage.getItem('isAuthenticated') ? true : false,
+  isAuthenticated: !isPreviewAuth && storedIsAuthenticated,
   user_id: parseStoredJson<string>(encryptedLocalStorage.getItem('user_id')),
   address: encryptedLocalStorage.getItem('wallet_address') ?? null,
   signature: encryptedLocalStorage.getItem('wallet_signature') ?? null,
   authMessage: encryptedLocalStorage.getItem('wallet_auth_message') ?? null,
-  authMethod: parseStoredJson<'base' | 'mock'>(encryptedLocalStorage.getItem('auth_method')),
+  authMethod: !isPreviewAuth ? storedAuthMethod ?? null : null,
   status: 'idle',
   error: null,
 }
@@ -53,7 +62,7 @@ const TokenSlice = createSlice({
         address?: string | null
         signature?: string | null
         authMessage?: string | null
-        authMethod?: 'base' | 'mock' | null
+        authMethod?: 'base' | null
         status?: AuthState['status']
         error?: string | null
       }>

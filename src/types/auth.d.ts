@@ -10,7 +10,7 @@ export type SignInResponse = {
   user: {
     id: string
     address: string
-    authMethod: 'base' | 'mock'
+    authMethod: 'base'
   }
 }
 
@@ -23,7 +23,7 @@ export type VerifyTokenResponse = {
   user?: {
     id: string
     address: string
-    authMethod: 'base' | 'mock'
+    authMethod: 'base'
   }
 }
 

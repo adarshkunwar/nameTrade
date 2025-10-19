@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 import { SignInWithBaseButton } from '@base-org/account-ui/react'
 import { useBaseAuth } from '@/hooks/auth/useBaseAuth'
-import { useAuth } from '@/hooks/auth/useAuth'
 import { Spinner } from '@/components/ui/Spinner'
 
 interface LoginFormProps {
@@ -11,20 +10,14 @@ interface LoginFormProps {
 
 export const LoginForm = ({ onSuccess, className = '' }: LoginFormProps) => {
   const { signInWithBase, isLoading: isBaseLoading, error: baseError } = useBaseAuth()
-  const { signInWithMockAuth, isLoading: isMockLoading, error: mockError } = useAuth()
 
   const handleBaseSignIn = useCallback(async () => {
     await signInWithBase()
     onSuccess?.()
   }, [signInWithBase, onSuccess])
 
-  const handleMockSignIn = useCallback(async () => {
-    await signInWithMockAuth()
-    onSuccess?.()
-  }, [signInWithMockAuth, onSuccess])
-
-  const isLoading = isBaseLoading || isMockLoading
-  const error = baseError || mockError
+  const isLoading = isBaseLoading
+  const error = baseError
 
   return (
     <div
@@ -47,21 +40,6 @@ export const LoginForm = ({ onSuccess, className = '' }: LoginFormProps) => {
           {error}
         </div>
       ) : null}
-
-      <div className="flex flex-col items-center gap-3">
-        <button
-          type="button"
-          onClick={handleMockSignIn}
-          disabled={isLoading}
-          className="text-xs font-medium uppercase tracking-wide text-[#7C8CAB] hover:text-[#A7B4D4] transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Continue without signing in (UI preview mode)
-        </button>
-        <p className="text-xs text-[#5E6E95] text-center">
-          Preview mode skips authentication while you design and test the experience. Sign in later to connect a real
-          Base account.
-        </p>
-      </div>
     </div>
   )
 }

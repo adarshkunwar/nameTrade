@@ -15,6 +15,7 @@ export const formatCollectionItem = (
       : '—'
   const rarityRank = typeof item.rarity?.rank === 'number' ? `#${item.rarity.rank.toLocaleString()}` : '—'
   const ownerAddress = item.owner?.address ?? '—'
+  const createdAt = item.createdAt ?? null
 
   return {
     id: item.id,
@@ -26,6 +27,7 @@ export const formatCollectionItem = (
     bestOfferUsd,
     rarityRank,
     ownerAddress,
+    createdAt,
   }
 }
 

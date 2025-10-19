@@ -6,6 +6,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import type { TProfileUsername } from '../types/profile'
 import { PROFILE_CONSTANTS } from '../constant/data.const'
 import { shorten } from '@/utils/username'
+import { formatDateTime } from '@/utils/date'
 
 interface OwnedUsernamesTableProps {
   data: TProfileUsername[]
@@ -16,16 +17,6 @@ interface OwnedUsernamesTableProps {
   onLoadMore?: () => void
   canLoadMore?: boolean
   isFetchingNextPage?: boolean
-}
-
-const formatDate = (value: string | null) => {
-  if (!value) return '—'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '—'
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date)
 }
 
 const OwnedUsernamesTable = ({
@@ -80,7 +71,7 @@ const OwnedUsernamesTable = ({
         accessorKey: 'lastTransferAt',
         header: 'Last Transfer',
         cell: ({ row }: any) => (
-          <span className="text-sm text-white">{formatDate(row.original.lastTransferAt)}</span>
+          <span className="text-sm text-white">{formatDateTime(row.original.lastTransferAt)}</span>
         ),
       },
     ],

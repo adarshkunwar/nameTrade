@@ -4,31 +4,26 @@ import { useNavigate } from 'react-router-dom'
 import Heading from '../ui/Typography'
 import type { RootState } from '@/config/store'
 import { clearAuthToken } from '@/config/store/authSlice'
+import { useBaseAuth } from '@/hooks/auth/useBaseAuth'
+import { shorten } from '@/utils/username'
 
 const Header = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const { signInWithBase, isLoading: isSigningIn, error: signInError } = useBaseAuth()
 
-  const { isAuthenticated, address, authMethod } = useSelector((state: RootState) => state.auth)
+  const { isAuthenticated, address } = useSelector((state: RootState) => state.auth)
 
   const displayName = useMemo(() => {
-    if (authMethod === 'mock') {
-      return 'Preview Mode'
-    }
     if (address) {
-      return `${address.slice(0, 6)}...${address.slice(-4)}`
+      return shorten(address)
     }
-    return 'Not signed in'
-  }, [address, authMethod])
+    return 'Guest'
+  }, [address])
 
   const handleSignOut = useCallback(() => {
     dispatch(clearAuthToken())
-    navigate('/login', { replace: true })
-  }, [dispatch, navigate])
-
-  const handleNavigateToLogin = useCallback(() => {
-    navigate('/login')
-  }, [navigate])
+  }, [dispatch])
 
   const handleNavigateHome = useCallback(() => {
     navigate('/')
@@ -39,6 +34,10 @@ const Header = () => {
       navigate(`/profile/${address}`)
     }
   }, [address, navigate])
+
+  const handleSignIn = useCallback(() => {
+    void signInWithBase()
+  }, [signInWithBase])
 
   return (
     <header className="bg-header py-4 px-8 flex justify-between items-center sticky top-0 z-10">
@@ -65,10 +64,13 @@ const Header = () => {
         ) : (
           <button
             type="button"
-            onClick={handleNavigateToLogin}
-            className="rounded-full border border-white/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition hover:border-white/40 hover:bg-white/10"
+            onClick={handleSignIn}
+            disabled={isSigningIn}
+            className="rounded-full border border-white/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition hover:border-white/40 hover:bg-white/10 disabled:opacity-60 disabled:cursor-not-allowed"
+            aria-label="Sign in with Base"
+            title={signInError ?? 'Sign in with Base'}
           >
-            Sign in
+            {isSigningIn ? 'Connecting…' : 'Sign in'}
           </button>
         )}
       </div>
