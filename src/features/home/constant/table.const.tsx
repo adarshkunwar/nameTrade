@@ -1,12 +1,3 @@
-const data = {
-  username: 'Ada',
-  minimumBid: '$100',
-  auctionEndsIn: '2 hours',
-  usernameFull: 'Ada Lovelace',
-  approxBid: '$150',
-  auctionEndsInProper: 'Oct 18, 2025 5:30 PM',
-}
-
 export const TABLE_DATA = [
   {
     username: 'Alan',

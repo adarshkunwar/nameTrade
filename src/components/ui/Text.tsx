@@ -1,8 +1,7 @@
 import type { InputHTMLAttributes } from 'react'
 import type { FC } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
-import { CiAt, CiSearch } from 'react-icons/ci'
-import { GoBriefcase } from 'react-icons/go'
+import { ICONS } from '@/assets/icons/icon'
 
 interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   name: string
@@ -27,11 +26,11 @@ export const TextField: FC<TextFieldProps> = ({
   const Icon = () => {
     switch (type) {
       case 'search':
-        return <CiSearch className="text-white" />
+        return ICONS.search
       case 'email':
-        return <CiAt className="text-white" />
+        return ICONS.email
       case 'password':
-        return <GoBriefcase className="text-white" />
+        return ICONS.password
       default:
         return null
     }
