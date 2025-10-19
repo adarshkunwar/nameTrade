@@ -1,13 +1,14 @@
 import Table from '@/components/ui/Table'
 import { Spinner } from '@/components/ui/Spinner'
 import Shimmer from '@/components/ui/Shimmer'
-import type { UsernameRow } from '../hooks/useCollectionItems'
+import type { TUsername } from '../types/username'
 import { cn } from '@/lib/utils'
 import { CONSTANTS } from '../constant/data.const'
 import Heading from '@/components/ui/Typography'
+import { shorten } from '@/utils/username'
 
 interface AllUsernamesTableProps {
-  data: UsernameRow[]
+  data: TUsername[]
   isLoading: boolean
   isRefetching: boolean
   error: string | null
@@ -17,11 +18,6 @@ interface AllUsernamesTableProps {
   isFetchingNextPage?: boolean
 }
 
-const shorten = (value: string) => {
-  if (!value || value === '—') return value ?? '—'
-  return value.length > 12 ? `${value.slice(0, 6)}…${value.slice(-4)}` : value
-}
-
 const COLUMNS = [
   {
     accessorKey: 'username',
@@ -29,36 +25,9 @@ const COLUMNS = [
     cell: ({ row }: any) => (
       <div className="flex flex-col gap-1">
         <div className="font-semibold text-white">@{row.original.username.split('.base')[0]}</div>
-        {/* <div className="text-xs text-secondary">
-          Token #{row.original.tokenId} · {shorten(row.original.contractAddress)}
-        </div> */}
       </div>
     ),
   },
-  // {
-  //   accessorKey: 'marketplace',
-  //   header: 'Listing',
-  //   cell: ({ row }: any) => (
-  //     <div className="flex flex-col gap-0.5">
-  //       <div className="font-semibold text-white">
-  //         {row.original.marketplace !== '—' ? row.original.marketplace : 'Not listed'}
-  //       </div>
-  //       <div className="text-xs text-gray">
-  //         Currency: {row.original.listingCurrency !== '—' ? row.original.listingCurrency : 'N/A'}
-  //       </div>
-  //     </div>
-  //   ),
-  // },
-  // {
-  //   accessorKey: 'bestOfferUsd',
-  //   header: 'Best Offer',
-  //   cell: ({ row }: any) => (
-  //     <div className="flex flex-col gap-0.5">
-  //       <div className="font-semibold text-white">{row.original.bestOfferUsd}</div>
-  //       <div className="text-xs text-gray">Rarity: {row.original.rarityRank}</div>
-  //     </div>
-  //   ),
-  // },
   {
     accessorKey: 'ownerAddress',
     header: 'Owner',
@@ -84,7 +53,7 @@ const AllUsernamesTable = ({
   const showEmpty = !isLoading && !error && data.length === 0
 
   return (
-    <div className="rounded-md border border-header bg-header/40 p-4 text-secondary">
+    <div className="rounded-md border border-header ">
       {showSkeleton && <SkeletonRows />}
 
       {error && (
@@ -111,7 +80,7 @@ const AllUsernamesTable = ({
         </div>
       )}
 
-      {showEmpty && <p>No usernames available right now.</p>}
+      {showEmpty && !isLoading && !error && data.length === 0 && <p>No usernames available right now.</p>}
 
       {onLoadMore && (canLoadMore || isFetchingNextPage) && (
         <div className="mt-4 flex justify-end">

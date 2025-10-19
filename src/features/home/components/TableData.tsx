@@ -35,7 +35,7 @@ const TableData = ({ data }: { data: any[] }) => {
   ]
 
   return (
-    <div className="rounded-md border border-header bg-header/40 p-4">
+    <div className="rounded-md border border-header ">
       <Table data={data} columns={columns} />
     </div>
   )

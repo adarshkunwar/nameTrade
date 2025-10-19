@@ -3,25 +3,18 @@ import { CiSearch } from 'react-icons/ci'
 import { IoClose } from 'react-icons/io5'
 import Shimmer from '@/components/ui/Shimmer'
 import { Spinner } from '@/components/ui/Spinner'
-import type { UsernameRow } from '../hooks/useCollectionItems'
+import type { TUsername } from '../types/username'
 
 interface SearchProps {
   searchTerm: string
   onSearchTermChange: (value: string) => void
-  results: UsernameRow[]
+  results: TUsername[]
   isLoading: boolean
   error: string | null
-  onResultSelect?: (value: UsernameRow) => void
+  onResultSelect?: (value: TUsername) => void
 }
 
-const Search = ({
-  searchTerm,
-  onSearchTermChange,
-  results,
-  isLoading,
-  error,
-  onResultSelect,
-}: SearchProps) => {
+const Search = ({ searchTerm, onSearchTermChange, results, isLoading, error, onResultSelect }: SearchProps) => {
   const [value, setValue] = useState(searchTerm)
 
   useEffect(() => {
@@ -57,11 +50,7 @@ const Search = ({
     }
 
     if (error) {
-      return (
-        <div className="flex items-center gap-2 px-4 py-3 text-sm text-red-400">
-          {error}
-        </div>
-      )
+      return <div className="flex items-center gap-2 px-4 py-3 text-sm text-red-400">{error}</div>
     }
 
     if (showResults) {
@@ -74,19 +63,16 @@ const Search = ({
               onClick={() => onResultSelect?.(item)}
               className="flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm text-white hover:bg-primary/40"
             >
-              
               <div className="flex flex-1 flex-col">
                 <span className="font-semibold">@{item.username.split('.base')[0]}</span>
-               
               </div>
-            
             </button>
           ))}
         </div>
       )
     }
 
-    if (showEmpty) {
+    if (showEmpty && !isLoading && !error) {
       return (
         <div className="px-4 py-3 text-sm text-gray">
           No usernames found for <span className="font-semibold text-white">“{trimmedValue}”</span>.
@@ -126,13 +112,11 @@ const Search = ({
 
       {shouldShowPanel && panelContent && (
         <div className="absolute left-0 right-0 z-20 mt-2 overflow-hidden rounded-md border border-header bg-header/95 shadow-lg backdrop-blur">
-         
           {panelContent}
         </div>
       )}
     </div>
   )
 }
-
 
 export default Search

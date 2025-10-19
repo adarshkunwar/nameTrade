@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { Tabs } from '@/components/ui/Tabs'
 import Title from './components/Title'
 import { CONSTANTS } from './constant/data.const'
 import Search from './components/search'
@@ -6,7 +7,8 @@ import TableData from './components/TableData'
 import { TABLE_DATA } from './constant/table.const'
 import AllUsernamesTable from './components/AllUsernamesTable'
 import Page from '@/components/ui/Page'
-import { useCollectionItems, useSearchCollectionItems, type UsernameRow } from './hooks/useCollectionItems'
+import { useCollectionItems, useSearchCollectionItems } from './hooks/useCollection'
+import type { TUsername } from './types/username'
 
 const Home = () => {
   const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => {
@@ -17,7 +19,6 @@ const Home = () => {
     }
   })
 
-  const [activeTab, setActiveTab] = useState<'top-auctions' | 'all-usernames'>('top-auctions')
   const [searchTerm, setSearchTerm] = useState('')
 
   const {
@@ -56,7 +57,7 @@ const Home = () => {
     setSearchTerm(value)
   }, [])
 
-  const handleResultSelect = useCallback((result: UsernameRow) => {
+  const handleResultSelect = useCallback((result: TUsername) => {
     setSearchTerm(result.username)
   }, [])
 
@@ -81,63 +82,28 @@ const Home = () => {
             onResultSelect={handleResultSelect}
           />
         </section>
+
         <section className="py-6">
-          <div className="flex flex-col gap-4">
-            <div
-              className="flex items-center gap-6 text-[26px] font-bold leading-[30px]"
-              role="tablist"
-              aria-label="Top auctions toggle"
-            >
-              <span
-                role="tab"
-                tabIndex={0}
-                aria-selected={activeTab === 'top-auctions'}
-                onClick={() => setActiveTab('top-auctions')}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    setActiveTab('top-auctions')
-                  }
-                }}
-                className={`cursor-pointer transition ${
-                  activeTab === 'top-auctions' ? 'text-white opacity-100' : 'text-white opacity-30 hover:opacity-60'
-                }`}
-              >
-                Top Auctions
-              </span>
-              <span
-                role="tab"
-                tabIndex={0}
-                aria-selected={activeTab === 'all-usernames'}
-                onClick={() => setActiveTab('all-usernames')}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    setActiveTab('all-usernames')
-                  }
-                }}
-                className={`cursor-pointer transition ${
-                  activeTab === 'all-usernames' ? 'text-white opacity-100' : 'text-white opacity-30 hover:opacity-60'
-                }`}
-              >
-                All Usernames
-              </span>
-            </div>
-            {activeTab === 'top-auctions' ? (
-              <TableData data={data} />
-            ) : (
-              <AllUsernamesTable
-                data={allUsernamesRows}
-                isLoading={isAllUsernamesLoading}
-                isRefetching={isAllUsernamesRefetching}
-                error={allUsernamesErrorMessage}
-                onRetry={refetchAllUsernames}
-                onLoadMore={hasMoreAllUsernames ? handleLoadMoreUsernames : undefined}
-                canLoadMore={hasMoreAllUsernames}
-                isFetchingNextPage={isAllUsernamesFetchingNext}
-              />
-            )}
-          </div>
+          <Tabs
+            tabs={[
+              { name: 'Top Auctions', field: <TableData data={data} /> },
+              {
+                name: 'All Usernames',
+                field: (
+                  <AllUsernamesTable
+                    data={allUsernamesRows}
+                    isLoading={isAllUsernamesLoading}
+                    isRefetching={isAllUsernamesRefetching}
+                    error={allUsernamesErrorMessage}
+                    onRetry={refetchAllUsernames}
+                    onLoadMore={hasMoreAllUsernames ? handleLoadMoreUsernames : undefined}
+                    canLoadMore={hasMoreAllUsernames}
+                    isFetchingNextPage={isAllUsernamesFetchingNext}
+                  />
+                ),
+              },
+            ]}
+          />
         </section>
       </div>
     </Page>
