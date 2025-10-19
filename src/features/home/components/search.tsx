@@ -76,7 +76,7 @@ const Search = ({
             >
               
               <div className="flex flex-1 flex-col">
-                <span className="font-semibold">@{item.username}</span>
+                <span className="font-semibold">@{item.username.split('.base')[0]}</span>
                
               </div>
             

@@ -1,11 +1,12 @@
-import { Suspense } from 'react'
-import { useEffect } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import ProtectedRoute from './protectedRoutes'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/config/store'
 import { RouteList } from './routesList'
 import Layout from '@/components/layout/Layout'
+
+const Login = lazy(() => import('@/features/auth'))
 
 const renderRoutes = (routes: any) => {
   return routes.map((route: any, i: number) => {
@@ -25,14 +26,17 @@ const RoutesContainer = () => {
   const location = useLocation()
 
   useEffect(() => {
-    if (!isAuthenticate && !RouteList?.some((route: any) => route.path === location?.pathname)) {
-      navigate('/login')
+    if (!isAuthenticate && location.pathname !== '/login') {
+      navigate('/login', { replace: true })
+    } else if (isAuthenticate && location.pathname === '/login') {
+      navigate('/', { replace: true })
     }
-  }, [location.pathname, isAuthenticate])
+  }, [isAuthenticate, location.pathname, navigate])
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
+        <Route path="/login" element={<Login />} />
         <Route path="/" element={<Layout />}>
           {renderRoutes(RouteList)}
         </Route>

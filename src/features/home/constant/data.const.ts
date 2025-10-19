@@ -8,4 +8,7 @@ export const CONSTANTS = {
     HEADING: 'Top Auctions',
     USERNAMES_HEADING: 'All Usernames',
   },
+  SEARCH: {
+    FETCHING_USERNAMES_ERROR: 'We ran into a problem fetching usernames.',
+  },
 }

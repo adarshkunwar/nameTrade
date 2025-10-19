@@ -84,29 +84,49 @@ const Home = () => {
         </section>
         <section className="py-6">
           <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
+            <div
+              className="flex items-center gap-6 text-[26px] font-bold leading-[30px]"
+              role="tablist"
+              aria-label="Top auctions toggle"
+            >
+              <span
+                role="tab"
+                tabIndex={0}
+                aria-selected={activeTab === 'top-auctions'}
                 onClick={() => setActiveTab('top-auctions')}
-                className={`rounded-md border px-4 py-2 text-sm font-semibold transition ${
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    setActiveTab('top-auctions')
+                  }
+                }}
+                className={`cursor-pointer transition ${
                   activeTab === 'top-auctions'
-                    ? 'border-primary bg-primary text-white'
-                    : 'border-transparent bg-header/60 text-secondary hover:border-primary hover:text-white'
+                    ? 'text-white opacity-100'
+                    : 'text-white opacity-30 hover:opacity-60'
                 }`}
               >
                 Top Auctions
-              </button>
-              <button
-                type="button"
+              </span>
+              <span
+                role="tab"
+                tabIndex={0}
+                aria-selected={activeTab === 'all-usernames'}
                 onClick={() => setActiveTab('all-usernames')}
-                className={`rounded-md border px-4 py-2 text-sm font-semibold transition ${
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    setActiveTab('all-usernames')
+                  }
+                }}
+                className={`cursor-pointer transition ${
                   activeTab === 'all-usernames'
-                    ? 'border-primary bg-primary text-white'
-                    : 'border-transparent bg-header/60 text-secondary hover:border-primary hover:text-white'
+                    ? 'text-white opacity-100'
+                    : 'text-white opacity-30 hover:opacity-60'
                 }`}
               >
                 All Usernames
-              </button>
+              </span>
             </div>
             {activeTab === 'top-auctions' ? (
               <TableData data={data} />
