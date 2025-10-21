@@ -6,7 +6,7 @@ import Shimmer from '@/components/ui/Shimmer'
 import { Spinner } from '@/components/ui/Spinner'
 import type { TProfileUsername } from '../types/profile'
 import { PROFILE_CONSTANTS } from '../constant/data.const'
-import { shorten } from '@/utils/username'
+import { walletAddress } from '@/utils/username'
 import { formatDateTime } from '@/utils/date'
 
 interface OwnedUsernamesTableProps {
@@ -65,7 +65,7 @@ const OwnedUsernamesTable = ({
         header: 'Contract',
         cell: ({ row }: any) => (
           <span className="text-sm text-white" title={row.original.contractAddress}>
-            {shorten(row.original.contractAddress)}
+            {walletAddress(row.original.contractAddress)}
           </span>
         ),
       },
@@ -144,9 +144,7 @@ const OwnedUsernamesTable = ({
         </div>
       )}
 
-      {showEmpty && !error && (
-        <div className="p-4 text-sm text-gray-300">{PROFILE_CONSTANTS.TABLE.EMPTY}</div>
-      )}
+      {showEmpty && !error && <div className="p-4 text-sm text-gray-300">{PROFILE_CONSTANTS.TABLE.EMPTY}</div>}
 
       {onLoadMore && canLoadMore && <div ref={loadMoreRef} className="h-1" />}
 

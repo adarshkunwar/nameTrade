@@ -1,39 +1,43 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FiArrowDown, FiArrowUp } from 'react-icons/fi'
 import Table from '@/components/ui/Table'
 import { Spinner } from '@/components/ui/Spinner'
 import Shimmer from '@/components/ui/Shimmer'
-import type { TUsername } from '../types/username'
 import { CONSTANTS } from '../constant/data.const'
 import Heading from '@/components/ui/Typography'
 import { walletAddress, ellipsiAtEnd } from '@/utils/username'
 import { formatRelativeTime } from '@/utils/date'
 import { cryptic } from '@/lib/utils'
+import { useCollectionItems } from '../hooks/useCollection'
 
-interface AllUsernamesTableProps {
-  data: TUsername[]
-  isLoading: boolean
-  error: string | null
-  onRetry: () => void | Promise<unknown>
-  onLoadMore?: () => void
-  canLoadMore?: boolean
-  isFetchingNextPage?: boolean
-  sortDirection: 'ASC' | 'DESC'
-  onToggleSort: () => void
-}
+const AllUsernamesTable = () => {
+  const [mintSortDirection, setMintSortDirection] = useState<'ASC' | 'DESC'>('DESC')
 
-const AllUsernamesTable = ({
-  data,
-  isLoading,
-  error,
-  onRetry,
-  onLoadMore,
-  canLoadMore = false,
-  isFetchingNextPage = false,
-  sortDirection,
-  onToggleSort,
-}: AllUsernamesTableProps) => {
+  const handleToggleMintSort = useCallback(() => {
+    setMintSortDirection((prev) => (prev === 'DESC' ? 'ASC' : 'DESC'))
+  }, [])
+
+  const {
+    rows: data,
+    isLoading,
+    error,
+    refetch: onRetry,
+    fetchNextPage: fetchMoreAllUsernames,
+    isFetchingNextPage,
+    hasMore: hasMoreAllUsernames,
+  } = useCollectionItems({
+    sortBy: 'CREATED_DATE',
+    sortDirection: mintSortDirection,
+    limit: 25,
+  })
+
+  const handleLoadMoreUsernames = useCallback(() => {
+    if (hasMoreAllUsernames) {
+      void fetchMoreAllUsernames()
+    }
+  }, [hasMoreAllUsernames, fetchMoreAllUsernames])
+
   const showSkeleton = isLoading && data.length === 0
   const showEmpty = !isLoading && !error && data.length === 0
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
@@ -80,11 +84,11 @@ const AllUsernamesTable = ({
         header: () => (
           <button
             type="button"
-            onClick={onToggleSort}
+            onClick={handleToggleMintSort}
             className="flex items-center gap-2 text-sm font-semibold text-white transition hover:text-primary"
           >
             Minted At
-            {sortDirection === 'DESC' ? <FiArrowDown /> : <FiArrowUp />}
+            {mintSortDirection === 'DESC' ? <FiArrowDown /> : <FiArrowUp />}
           </button>
         ),
         cell: ({ row }: any) => (
@@ -92,11 +96,11 @@ const AllUsernamesTable = ({
         ),
       },
     ],
-    [onToggleSort, sortDirection]
+    [handleToggleMintSort, mintSortDirection]
   )
 
   useEffect(() => {
-    if (!onLoadMore || !canLoadMore || isFetchingNextPage) return
+    if (!handleLoadMoreUsernames || !hasMoreAllUsernames || isFetchingNextPage) return
 
     const target = loadMoreRef.current
     if (!target) return
@@ -106,7 +110,7 @@ const AllUsernamesTable = ({
         const isIntersecting = entries.some((entry) => entry.isIntersecting)
         if (isIntersecting) {
           observer.disconnect()
-          void onLoadMore()
+          void handleLoadMoreUsernames()
         }
       },
       { root: null, rootMargin: '0px', threshold: 0.1 }
@@ -117,16 +121,16 @@ const AllUsernamesTable = ({
     return () => {
       observer.disconnect()
     }
-  }, [onLoadMore, canLoadMore, isFetchingNextPage])
+  }, [handleLoadMoreUsernames, hasMoreAllUsernames, isFetchingNextPage])
 
   return (
     <div className="mx-auto w-full max-w-3xl">
       {error && (
         <div className="flex flex-col gap-2">
           <Heading variant="body" title={CONSTANTS.SEARCH.FETCHING_USERNAMES_ERROR} color="white" />
-          <p className="text-sm text-gray">{error}</p>
+          <p className="text-sm text-gray">{error instanceof Error ? error.message : error ? 'Unknown error' : null}</p>
           <button
-            onClick={onRetry}
+            onClick={() => void onRetry()}
             className="self-start rounded border border-primary px-3 py-1 text-sm text-white hover:bg-primary/20"
           >
             Retry
@@ -146,7 +150,7 @@ const AllUsernamesTable = ({
         <p>No usernames available right now.</p>
       )}
 
-      {!showSkeleton && onLoadMore && canLoadMore && <div ref={loadMoreRef} className="h-1" />}
+      {!showSkeleton && hasMoreAllUsernames && <div ref={loadMoreRef} className="h-1" />}
 
       {!showSkeleton && isFetchingNextPage && (
         <div className="flex justify-center py-6">

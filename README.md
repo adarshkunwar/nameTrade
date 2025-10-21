@@ -1,13 +1,3 @@
-refactor --------
-
-1. scroll issues ---
-2. username routes ---
-3. owner route ---
-6. asc and desc table ---
-4. search remove spinner 
-5. search layout shift
-7. search no user found
-
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
