@@ -10,16 +10,10 @@ import AllUsernamesTable from './components/AllUsernamesTable'
 import Page from '@/components/ui/Page'
 import { useCollectionItems, useSearchCollectionItems } from './hooks/useCollection'
 import type { TUsername } from './types/username'
+import { cryptic } from '@/lib/utils'
 
 const Home = () => {
   const navigate = useNavigate()
-  const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => {
-    const data = TABLE_DATA[0]
-    return {
-      ...data,
-      username: item + 1,
-    }
-  })
 
   const [searchTerm, setSearchTerm] = useState('')
   const [mintSortDirection, setMintSortDirection] = useState<'ASC' | 'DESC'>('DESC')
@@ -53,6 +47,14 @@ const Home = () => {
     sortDirection: 'ASC',
   })
 
+  const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => {
+    const data = TABLE_DATA[0]
+    return {
+      ...data,
+      username: item + 1,
+    }
+  })
+
   const searchErrorMessage = searchError instanceof Error ? searchError.message : searchError ? 'Unknown error' : null
 
   const handleSearchTermChange = useCallback((value: string) => {
@@ -62,7 +64,7 @@ const Home = () => {
   const handleResultSelect = useCallback(
     (result: TUsername) => {
       setSearchTerm('')
-      navigate(`/username/${result.tokenId}`, {
+      navigate(`/username/${cryptic().urlSafeEncrypt(result.tokenId)}`, {
         state: {
           username: result.username,
         },
@@ -100,9 +102,10 @@ const Home = () => {
         <section className="py-6">
           <Tabs
             tabs={[
-              { name: 'Top Auctions', field: <TableData data={data} /> },
+              { name: 'Top Auctions', field: <TableData data={data} />, key: 'top+auctions' },
               {
                 name: 'All Usernames',
+                key: 'all+usernames',
                 field: (
                   <div className="flex justify-center">
                     <AllUsernamesTable

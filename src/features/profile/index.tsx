@@ -4,31 +4,21 @@ import Page from '@/components/ui/Page'
 import Heading from '@/components/ui/Typography'
 import OwnedUsernamesTable from './components/OwnedUsernamesTable'
 import { useProfileItems } from './hooks/useProfileItems'
-import { shorten } from '@/utils/username'
+import { walletAddress } from '@/utils/username'
 
 const Profile = () => {
   const { walletAddress: walletAddressParam } = useParams()
 
-  const normalizedAddress = useMemo(
-    () => walletAddressParam?.trim() ?? null,
-    [walletAddressParam]
-  )
+  const normalizedAddress = useMemo(() => walletAddressParam?.trim() ?? null, [walletAddressParam])
 
-  const {
-    rows,
-    isLoading,
-    isRefetching,
-    error,
-    refetch,
-    hasMore,
-    fetchNextPage,
-    isFetchingNextPage,
-  } = useProfileItems({
-    address: normalizedAddress,
-    limit: 50,
-    sortBy: 'RECEIVED_DATE',
-    sortDirection: 'DESC',
-  })
+  const { rows, isLoading, isRefetching, error, refetch, hasMore, fetchNextPage, isFetchingNextPage } = useProfileItems(
+    {
+      address: normalizedAddress,
+      limit: 50,
+      sortBy: 'RECEIVED_DATE',
+      sortDirection: 'DESC',
+    }
+  )
 
   const errorMessage = error instanceof Error ? error.message : error ? 'Unknown error' : null
 
@@ -38,7 +28,7 @@ const Profile = () => {
     }
   }, [hasMore, fetchNextPage])
 
-  const displayAddress = normalizedAddress ? shorten(normalizedAddress) : null
+  const displayAddress = normalizedAddress ? walletAddress(normalizedAddress) : null
   const headingTitle = normalizedAddress ? `Profile of ${displayAddress}` : 'Profile'
 
   return (

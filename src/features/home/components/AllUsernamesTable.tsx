@@ -7,8 +7,9 @@ import Shimmer from '@/components/ui/Shimmer'
 import type { TUsername } from '../types/username'
 import { CONSTANTS } from '../constant/data.const'
 import Heading from '@/components/ui/Typography'
-import { shorten } from '@/utils/username'
+import { walletAddress, ellipsiAtEnd } from '@/utils/username'
 import { formatRelativeTime } from '@/utils/date'
+import { cryptic } from '@/lib/utils'
 
 interface AllUsernamesTableProps {
   data: TUsername[]
@@ -48,11 +49,11 @@ const AllUsernamesTable = ({
           return (
             <div className="flex flex-col gap-1">
               <Link
-                to={`/username/${row.original.tokenId}`}
-                state={{ username: usernameValue }}
-                className="font-semibold text-white transition hover:text-primary"
+                to={`/username/${cryptic().urlSafeEncrypt(row.original.tokenId)}`}
+                state={{ username: row.original.username }}
+                className="font-semibold text-white transition "
               >
-                {display}
+                {ellipsiAtEnd(display, 15)}
               </Link>
             </div>
           )
@@ -64,14 +65,14 @@ const AllUsernamesTable = ({
         cell: ({ row }: any) =>
           row.original.ownerAddress && row.original.ownerAddress !== '—' ? (
             <Link
-              to={`/profile/${row.original.ownerAddress}`}
-              className="font-semibold text-white transition-colors hover:text-primary"
+              to={`/profile/${cryptic().urlSafeEncrypt(row.original.ownerAddress)}`}
+              className="font-semibold text-white transition-colors "
               title={row.original.ownerAddress}
             >
-              {shorten(row.original.ownerAddress)}
+              {walletAddress(row.original.ownerAddress)}
             </Link>
           ) : (
-            <div className="font-semibold text-white">{shorten(row.original.ownerAddress)}</div>
+            <div className="font-semibold text-white">{walletAddress(row.original.ownerAddress)}</div>
           ),
       },
       {
@@ -137,7 +138,6 @@ const AllUsernamesTable = ({
 
       {!showSkeleton && !error && data.length > 0 && (
         <div className="flex flex-col gap-3">
-          
           <Table data={data} columns={columns} />
         </div>
       )}
