@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { RouteList } from './routesList'
 import Layout from '@/components/layout/Layout'
+import Page404 from '@/components/layout/page404'
 
 const renderRoutes = (routes: any) => {
   return routes.map((route: any, i: number) => {
@@ -21,7 +22,7 @@ const RoutesContainer = () => (
       <Route path="/" element={<Layout />}>
         {renderRoutes(RouteList)}
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Page404 />} />
     </Routes>
   </Suspense>
 )
