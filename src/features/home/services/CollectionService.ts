@@ -9,24 +9,10 @@ export class CollectionService implements ICollectionService {
   }
 }
 
-// ===== FACTORY PATTERN (Dependency Inversion Principle) =====
-export class CollectionServiceFactory {
-  static create(): ICollectionService {
-    return new CollectionService()
-  }
-
-  static createWithMock(): ICollectionService {
-    return new MockCollectionService()
-  }
-}
-
-// ===== MOCK IMPLEMENTATION (Open/Closed Principle) =====
-class MockCollectionService implements ICollectionService {
+// ===== SINGLETONS =====
+export const collectionService: ICollectionService = new CollectionService()
+export const mockCollectionService: ICollectionService = new (class implements ICollectionService {
   async fetchCollectionItems(_variables: CollectionItemsListVariables) {
-    // Mock implementation for testing
-    return {
-      items: [],
-      nextPageCursor: null,
-    }
+    return { items: [], nextPageCursor: null }
   }
-}
+})()

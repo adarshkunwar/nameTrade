@@ -1,41 +1,58 @@
-import { useEffect, useMemo, useState } from 'react'
-import { CiSearch } from 'react-icons/ci'
-import { IoClose } from 'react-icons/io5'
+import { useCallback, useMemo, useState } from 'react'
 import Shimmer from '@/components/ui/Shimmer'
-import { Spinner } from '@/components/ui/Spinner'
 import type { TUsername } from '../types/username'
+import TextField from '@/components/ui/Text'
+import { FormProvider, useForm } from 'react-hook-form'
+import { CONSTANTS } from '../constant/data.const'
+import { useSearchCollectionItems } from '../hooks/useCollection'
+import { cryptic } from '@/lib/utils'
+import { useNavigate } from 'react-router-dom'
 
-interface SearchProps {
-  searchTerm: string
-  onSearchTermChange: (value: string) => void
-  results: TUsername[]
-  isLoading: boolean
-  error: string | null
-  onResultSelect?: (value: TUsername) => void
-}
+const Search = () => {
+  const navigate = useNavigate()
 
-const Search = ({ searchTerm, onSearchTermChange, results, isLoading, error, onResultSelect }: SearchProps) => {
-  const [value, setValue] = useState(searchTerm)
+  const [value, setValue] = useState('')
 
-  useEffect(() => {
-    setValue(searchTerm)
-  }, [searchTerm])
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      onSearchTermChange(value)
-    }, 250)
-
-    return () => clearTimeout(handler)
-  }, [value, onSearchTermChange])
+  const {
+    rows: results,
+    isLoading: isResultsLoading,
+    isFetching: isResultsFetching,
+    error,
+  } = useSearchCollectionItems({
+    searchTerm: value,
+    limit: 8,
+    sortBy: 'CREATED_DATE',
+    sortDirection: 'ASC',
+  })
 
   const trimmedValue = value.trim()
-  const shouldShowPanel = trimmedValue.length > 0 || isLoading || Boolean(error)
-  const showResults = trimmedValue.length > 0 && results.length > 0 && !isLoading && !error
-  const showEmpty = trimmedValue.length > 0 && results.length === 0 && !isLoading && !error
+  const shouldShowPanel = trimmedValue.length > 0 || isResultsLoading || isResultsFetching || Boolean(error)
+  const showResults = trimmedValue.length > 0 && results.length > 0 && !isResultsLoading && !error
+  const showEmpty = trimmedValue.length > 0 && results.length === 0 && !isResultsLoading && !error
+
+  const methods = useForm<{ search: string }>({
+    defaultValues: {
+      search: '',
+    },
+  })
+
+  const onSubmit = (data: { search: string }) => {
+    console.log(data)
+  }
+
+  const onResultSelect = useCallback(
+    (result: TUsername) => {
+      navigate(`/username/${cryptic().urlSafeEncrypt(result.tokenId)}`, {
+        state: {
+          username: result.username,
+        },
+      })
+    },
+    [navigate]
+  )
 
   const panelContent = useMemo(() => {
-    if (isLoading) {
+    if (isResultsLoading) {
       return (
         <div className="flex flex-col gap-2 p-3">
           {Array.from({ length: 5 }).map((_, index) => (
@@ -50,7 +67,7 @@ const Search = ({ searchTerm, onSearchTermChange, results, isLoading, error, onR
     }
 
     if (error) {
-      return <div className="flex items-center gap-2 px-4 py-3 text-sm text-red-400">{error}</div>
+      return <div className="flex items-center gap-2 px-4 py-3 text-sm text-red-400">{error.message}</div>
     }
 
     if (showResults) {
@@ -72,7 +89,7 @@ const Search = ({ searchTerm, onSearchTermChange, results, isLoading, error, onR
       )
     }
 
-    if (showEmpty && !isLoading && !error) {
+    if (showEmpty && !isResultsLoading && !isResultsFetching && !error) {
       return (
         <div className="px-4 py-3 text-sm text-gray">
           No usernames found for <span className="font-semibold text-white">“{trimmedValue}”</span>.
@@ -81,33 +98,26 @@ const Search = ({ searchTerm, onSearchTermChange, results, isLoading, error, onR
     }
 
     return null
-  }, [isLoading, error, results, showResults, showEmpty, onResultSelect, trimmedValue])
+  }, [isResultsLoading, isResultsFetching, error, results, showResults, showEmpty, onResultSelect, trimmedValue])
 
   return (
-    <div className="relative w-full max-w-2xl">
-      <div className="flex items-center gap-3 rounded-md border border-header bg-primary/80 p-4">
-        <CiSearch className="text-lg text-white" />
-        <input
-          value={value}
-          onChange={(event) => setValue(event.target.value)}
-          placeholder="Search usernames"
-          className="w-full bg-transparent text-sm text-white outline-none placeholder:text-gray"
-        />
-        {isLoading && (
-          <div className="text-secondary">
-            <Spinner size="sm" />
-          </div>
-        )}
-        {value && (
-          <button
-            type="button"
-            onClick={() => setValue('')}
-            className="rounded-full p-1 text-gray transition hover:bg-header hover:text-white"
-            aria-label="Clear search"
-          >
-            <IoClose className="text-lg" />
-          </button>
-        )}
+    <div className="relative w-full ">
+      <div className="flex flex-col gap-3 rounded-md border border-header  ">
+        <FormProvider {...methods}>
+          <form onSubmit={methods.handleSubmit(onSubmit)}>
+            <div className="w-full">
+              <TextField
+                name="search"
+                placeholder={CONSTANTS.SEARCH.PLACEHOLDER}
+                customLabel=""
+                value={value}
+                type="search"
+                onChange={(event) => setValue(event.target.value)}
+              />
+            </div>
+            {/* <button type="submit">Search</button> */}
+          </form>
+        </FormProvider>
       </div>
 
       {shouldShowPanel && panelContent && (

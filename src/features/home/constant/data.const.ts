@@ -10,5 +10,6 @@ export const CONSTANTS = {
   },
   SEARCH: {
     FETCHING_USERNAMES_ERROR: 'We ran into a problem fetching usernames.',
+    PLACEHOLDER: 'Search usernames',
   },
 }

@@ -2,6 +2,7 @@ import type { InputHTMLAttributes } from 'react'
 import type { FC } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 import { ICONS } from '@/assets/icons/icon'
+import { Spinner } from './Spinner'
 
 interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   name: string
@@ -10,6 +11,7 @@ interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'si
   placeholder?: string
   size?: 'small' | 'medium'
   type?: 'text' | 'email' | 'password' | 'search'
+  isLoading?: boolean
 }
 
 export const TextField: FC<TextFieldProps> = ({
@@ -19,6 +21,7 @@ export const TextField: FC<TextFieldProps> = ({
   size = 'small',
   placeholder = '',
   type = 'text',
+  isLoading = false,
   ...rest
 }) => {
   const { control } = useFormContext()
@@ -56,6 +59,12 @@ export const TextField: FC<TextFieldProps> = ({
               {...rest}
               placeholder={placeholder}
             />
+
+            {isLoading && (
+              <div className="text-secondary">
+                <Spinner size="sm" />
+              </div>
+            )}
           </div>
           {error?.message && <p className="text-red-500 text-sm">{error?.message}</p>}
         </>

@@ -9,9 +9,5 @@ export class CollectionFormatter implements ICollectionFormatter {
   }
 }
 
-// ===== FACTORY FOR FORMATTER (Dependency Inversion Principle) =====
-export class CollectionFormatterFactory {
-  static create(): ICollectionFormatter {
-    return new CollectionFormatter()
-  }
-}
+// ===== SINGLETON EXPORT =====
+export const collectionFormatter: ICollectionFormatter = new CollectionFormatter()

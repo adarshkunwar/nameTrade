@@ -42,9 +42,5 @@ export class CollectionQueryBuilder implements ICollectionQueryBuilder {
   }
 }
 
-// ===== FACTORY FOR QUERY BUILDER (Dependency Inversion Principle) =====
-export class CollectionQueryBuilderFactory {
-  static create(): ICollectionQueryBuilder {
-    return new CollectionQueryBuilder()
-  }
-}
+// ===== SINGLETON EXPORT =====
+export const collectionQueryBuilder: ICollectionQueryBuilder = new CollectionQueryBuilder()

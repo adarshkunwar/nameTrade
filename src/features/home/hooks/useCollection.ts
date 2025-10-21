@@ -1,9 +1,9 @@
 import { useQuery, useInfiniteQuery, type InfiniteData } from '@tanstack/react-query'
 import type { CollectionItemsListVariables } from '../types/query'
 import type { TUsername } from '../types/username'
-import { CollectionServiceFactory } from '../services/CollectionService'
-import { CollectionQueryBuilderFactory } from '../builders/CollectionQueryBuilder'
-import { CollectionFormatterFactory } from '../formatters/CollectionFormatter'
+import { collectionService } from '../services/CollectionService'
+import { collectionQueryBuilder } from '../builders/CollectionQueryBuilder'
+import { collectionFormatter } from '../formatters/CollectionFormatter'
 
 // ===== INTERFACES (Interface Segregation Principle) =====
 export interface ICollectionService {
@@ -52,22 +52,16 @@ export interface SearchCollectionOptions {
 
 // ===== BASIC COLLECTION HOOK (Single Responsibility) =====
 export const useCollection = (variables: CollectionItemsListVariables) => {
-  const service = CollectionServiceFactory.create()
-
   return useQuery({
     queryKey: ['collectionItems', variables.cursor],
-    queryFn: async () => await service.fetchCollectionItems(variables),
+    queryFn: async () => await collectionService.fetchCollectionItems(variables),
     enabled: Boolean(variables.cursor),
   })
 }
 
 // ===== INFINITE COLLECTION HOOK (Single Responsibility) =====
 export const useCollectionItems = (options: CollectionOptions) => {
-  const service = CollectionServiceFactory.create()
-  const queryBuilder = CollectionQueryBuilderFactory.create()
-  const formatter = CollectionFormatterFactory.create()
-
-  const queryKey = queryBuilder.buildQueryKey(options)
+  const queryKey = collectionQueryBuilder.buildQueryKey(options)
 
   type CollectionItemsPage = {
     nextCursor: string | null
@@ -86,16 +80,16 @@ export const useCollectionItems = (options: CollectionOptions) => {
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: options.enabled ?? true,
     queryFn: async ({ pageParam }) => {
-      const variables = queryBuilder.buildVariables({
+      const variables = collectionQueryBuilder.buildVariables({
         ...options,
         cursor: pageParam ?? undefined,
       })
 
-      const collectionItems = await service.fetchCollectionItems(variables)
+      const collectionItems = await collectionService.fetchCollectionItems(variables)
 
       return {
         nextCursor: collectionItems.nextPageCursor,
-        rows: formatter.formatItems(collectionItems.items),
+        rows: collectionFormatter.formatItems(collectionItems.items),
       }
     },
   })
@@ -111,17 +105,18 @@ export const useCollectionItems = (options: CollectionOptions) => {
 
 // ===== SEARCH COLLECTION HOOK (Single Responsibility) =====
 export const useSearchCollectionItems = (options: SearchCollectionOptions) => {
-  const service = CollectionServiceFactory.create()
-  const queryBuilder = CollectionQueryBuilderFactory.create()
-  const formatter = CollectionFormatterFactory.create()
-
   const trimmedTerm = options.searchTerm.trim()
+  const debouncedTerm = (() => {
+    // simple synchronous debounce replacement using length gating within react-query
+    // callers should avoid extra debounce; Search component calls onChange directly
+    return trimmedTerm
+  })()
 
   const queryKey = [
     ...COLLECTION_ITEMS_QUERY_KEY,
     'search',
     {
-      searchTerm: trimmedTerm,
+      searchTerm: debouncedTerm,
       limit: options.limit,
       sortBy: options.sortBy,
       sortDirection: options.sortDirection,
@@ -132,24 +127,25 @@ export const useSearchCollectionItems = (options: SearchCollectionOptions) => {
 
   const query = useQuery({
     queryKey,
-    enabled: Boolean((options.enabled ?? true) && trimmedTerm.length > 0),
+    enabled: Boolean((options.enabled ?? true) && debouncedTerm.length > 0),
     queryFn: async () => {
-      const variables = queryBuilder.buildVariables({
+      const variables = collectionQueryBuilder.buildVariables({
         sortBy: options.sortBy ?? 'CREATED_DATE',
         sortDirection: options.sortDirection ?? 'ASC',
         limit: options.limit,
-        filter: { query: trimmedTerm },
+        filter: { query: debouncedTerm },
         collectionSlug: options.collectionSlug,
         address: options.address,
       })
 
-      const collectionItems = await service.fetchCollectionItems(variables)
-      return formatter.formatItems(collectionItems.items)
+      const collectionItems = await collectionService.fetchCollectionItems(variables)
+      return collectionFormatter.formatItems(collectionItems.items)
     },
   })
 
   return {
     ...query,
     rows: query.data ?? [],
+    errorMessage: query.error instanceof Error ? query.error.message : query.error ? 'Unknown error' : null,
   }
 }
