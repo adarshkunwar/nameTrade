@@ -1,61 +1,125 @@
+import { useEffect, useMemo, useRef } from 'react'
+import { Link } from 'react-router-dom'
+import { FiArrowDown, FiArrowUp } from 'react-icons/fi'
 import Table from '@/components/ui/Table'
 import { Spinner } from '@/components/ui/Spinner'
 import Shimmer from '@/components/ui/Shimmer'
 import type { TUsername } from '../types/username'
-import { cn } from '@/lib/utils'
 import { CONSTANTS } from '../constant/data.const'
 import Heading from '@/components/ui/Typography'
 import { shorten } from '@/utils/username'
+import { formatRelativeTime } from '@/utils/date'
 
 interface AllUsernamesTableProps {
   data: TUsername[]
   isLoading: boolean
-  isRefetching: boolean
   error: string | null
   onRetry: () => void | Promise<unknown>
   onLoadMore?: () => void
   canLoadMore?: boolean
   isFetchingNextPage?: boolean
+  sortDirection: 'ASC' | 'DESC'
+  onToggleSort: () => void
 }
-
-const COLUMNS = [
-  {
-    accessorKey: 'username',
-    header: 'Username',
-    cell: ({ row }: any) => (
-      <div className="flex flex-col gap-1">
-        <div className="font-semibold text-white">@{row.original.username.split('.base')[0]}</div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'ownerAddress',
-    header: 'Owner',
-    cell: ({ row }: any) => (
-      <div className="flex flex-col gap-0.5">
-        <div className="font-semibold text-white">{shorten(row.original.ownerAddress)}</div>
-      </div>
-    ),
-  },
-]
 
 const AllUsernamesTable = ({
   data,
   isLoading,
-  isRefetching,
   error,
   onRetry,
   onLoadMore,
   canLoadMore = false,
   isFetchingNextPage = false,
+  sortDirection,
+  onToggleSort,
 }: AllUsernamesTableProps) => {
   const showSkeleton = isLoading && data.length === 0
   const showEmpty = !isLoading && !error && data.length === 0
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
+
+  const columns = useMemo(
+    () => [
+      {
+        accessorKey: 'username',
+        header: 'Username',
+        cell: ({ row }: any) => {
+          const usernameValue = row.original.username
+          const display = `@${usernameValue.split('.base')[0]}`
+          return (
+            <div className="flex flex-col gap-1">
+              <Link
+                to={`/username/${row.original.tokenId}`}
+                state={{ username: usernameValue }}
+                className="font-semibold text-white transition hover:text-primary"
+              >
+                {display}
+              </Link>
+            </div>
+          )
+        },
+      },
+      {
+        accessorKey: 'ownerAddress',
+        header: 'Owner',
+        cell: ({ row }: any) =>
+          row.original.ownerAddress && row.original.ownerAddress !== '—' ? (
+            <Link
+              to={`/profile/${row.original.ownerAddress}`}
+              className="font-semibold text-white transition-colors hover:text-primary"
+              title={row.original.ownerAddress}
+            >
+              {shorten(row.original.ownerAddress)}
+            </Link>
+          ) : (
+            <div className="font-semibold text-white">{shorten(row.original.ownerAddress)}</div>
+          ),
+      },
+      {
+        accessorKey: 'createdAt',
+        header: () => (
+          <button
+            type="button"
+            onClick={onToggleSort}
+            className="flex items-center gap-2 text-sm font-semibold text-white transition hover:text-primary"
+          >
+            Minted At
+            {sortDirection === 'DESC' ? <FiArrowDown /> : <FiArrowUp />}
+          </button>
+        ),
+        cell: ({ row }: any) => (
+          <span className="text-sm text-white">{formatRelativeTime(row.original.createdAt)}</span>
+        ),
+      },
+    ],
+    [onToggleSort, sortDirection]
+  )
+
+  useEffect(() => {
+    if (!onLoadMore || !canLoadMore || isFetchingNextPage) return
+
+    const target = loadMoreRef.current
+    if (!target) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const isIntersecting = entries.some((entry) => entry.isIntersecting)
+        if (isIntersecting) {
+          observer.disconnect()
+          void onLoadMore()
+        }
+      },
+      { root: null, rootMargin: '0px', threshold: 0.1 }
+    )
+
+    observer.observe(target)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [onLoadMore, canLoadMore, isFetchingNextPage])
 
   return (
-    <div className="rounded-md border border-header ">
-      {showSkeleton && <SkeletonRows />}
-
+    <div className="mx-auto w-full max-w-3xl">
       {error && (
         <div className="flex flex-col gap-2">
           <Heading variant="body" title={CONSTANTS.SEARCH.FETCHING_USERNAMES_ERROR} color="white" />
@@ -69,65 +133,61 @@ const AllUsernamesTable = ({
         </div>
       )}
 
+      {showSkeleton && !error && <SkeletonTable columns={columns} />}
+
       {!showSkeleton && !error && data.length > 0 && (
         <div className="flex flex-col gap-3">
-          {isRefetching && (
-            <div className="flex items-center gap-2 rounded border border-header/50 bg-header/30 p-2 text-sm text-gray">
-              <Spinner size="sm" />
-            </div>
-          )}
-          <Table data={data} columns={COLUMNS} />
+          
+          <Table data={data} columns={columns} />
         </div>
       )}
 
-      {showEmpty && !isLoading && !error && data.length === 0 && <p>No usernames available right now.</p>}
+      {!showSkeleton && showEmpty && !isLoading && !error && data.length === 0 && (
+        <p>No usernames available right now.</p>
+      )}
 
-      {onLoadMore && (canLoadMore || isFetchingNextPage) && (
-        <div className="mt-4 flex justify-end">
-          <button
-            type="button"
-            onClick={onLoadMore}
-            disabled={!canLoadMore || isFetchingNextPage}
-            className={cn(
-              'flex items-center gap-2 rounded border border-primary px-4 py-2 text-sm text-white transition-colors',
-              canLoadMore && !isFetchingNextPage ? 'hover:bg-primary/20' : 'cursor-not-allowed opacity-70'
-            )}
-          >
-            {isFetchingNextPage && <Spinner size="sm" />}
-            <span>{canLoadMore ? 'Load more' : 'No more results'}</span>
-          </button>
+      {!showSkeleton && onLoadMore && canLoadMore && <div ref={loadMoreRef} className="h-1" />}
+
+      {!showSkeleton && isFetchingNextPage && (
+        <div className="flex justify-center py-6">
+          <Spinner />
         </div>
       )}
     </div>
   )
 }
 
-const SkeletonRows = () => (
-  <div className="flex flex-col gap-3">
-    {Array.from({ length: 5 }).map((_, index) => (
-      <div
-        key={index}
-        className="grid grid-cols-[2fr,1fr,1fr,1fr] gap-4 rounded border border-header/60 bg-header/60 p-3"
-      >
-        <div className="flex flex-col gap-2">
-          <Shimmer height={14} rounded />
-          <Shimmer width="60%" height={10} rounded />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Shimmer width="70%" height={14} rounded />
-          <Shimmer width="50%" height={10} rounded />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Shimmer width="60%" height={14} rounded />
-          <Shimmer width="40%" height={10} rounded />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Shimmer width="80%" height={14} rounded />
-          <Shimmer width="50%" height={10} rounded />
-        </div>
-      </div>
-    ))}
-  </div>
-)
+const SkeletonTable = ({ columns, rowCount = 5 }: { columns: any[]; rowCount?: number }) => {
+  const skeletonWidths: Record<string, string> = {
+    username: '50%',
+    ownerAddress: '40%',
+    createdAt: '35%',
+  }
+
+  return (
+    <table className="w-full border-collapse border border-header rounded-md">
+      <thead className="bg-primary text-white">
+        <tr className="text-left border-b border-header rounded-t-md">
+          {columns.map((column, index) => (
+            <th key={index} className="py-2 px-4">
+              {typeof column.header === 'function' ? column.header() : column.header}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {Array.from({ length: rowCount }).map((_, rowIndex) => (
+          <tr key={rowIndex} className="border-b border-header hover:bg-header rounded-b-md">
+            {columns.map((column, columnIndex) => (
+              <td key={columnIndex} className="py-3 px-4">
+                <Shimmer height={14} width={skeletonWidths[column.accessorKey] ?? '60%'} rounded />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
 
 export default AllUsernamesTable

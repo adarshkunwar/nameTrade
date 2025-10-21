@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '@/config/store'
 import { setAuthToken, clearAuthToken } from '@/config/store/authSlice'
-import { signInWithBase, signInWithMock, signOut as apiSignOut } from './api'
+import { signInWithBase, signOut as apiSignOut } from './api'
 import type { SignInRequest } from '@/types/auth'
 
 export const useAuth = () => {
@@ -46,40 +46,6 @@ export const useAuth = () => {
     [dispatch, authState.status]
   )
 
-  const signInWithMockAuth = useCallback(async () => {
-    if (authState.status === 'loading') {
-      return
-    }
-
-    dispatch(setAuthToken({ status: 'loading', error: null }))
-
-    try {
-      const response = await signInWithMock()
-
-      dispatch(
-        setAuthToken({
-          isAuthenticated: true,
-          accessToken: response.accessToken,
-          user_id: response.user.id,
-          address: response.user.address,
-          authMethod: response.user.authMethod,
-          status: 'authenticated',
-          error: null,
-        })
-      )
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Mock authentication failed.'
-
-      dispatch(
-        setAuthToken({
-          status: 'error',
-          error: message,
-          isAuthenticated: false,
-        })
-      )
-    }
-  }, [dispatch, authState.status])
-
   const signOut = useCallback(async () => {
     try {
       await apiSignOut()
@@ -103,7 +69,6 @@ export const useAuth = () => {
 
     // Actions
     signIn,
-    signInWithMockAuth,
     signOut,
   }
 }

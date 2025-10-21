@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Tabs } from '@/components/ui/Tabs'
 import Title from './components/Title'
 import { CONSTANTS } from './constant/data.const'
@@ -11,6 +12,7 @@ import { useCollectionItems, useSearchCollectionItems } from './hooks/useCollect
 import type { TUsername } from './types/username'
 
 const Home = () => {
+  const navigate = useNavigate()
   const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => {
     const data = TABLE_DATA[0]
     return {
@@ -20,19 +22,19 @@ const Home = () => {
   })
 
   const [searchTerm, setSearchTerm] = useState('')
+  const [mintSortDirection, setMintSortDirection] = useState<'ASC' | 'DESC'>('DESC')
 
   const {
     rows: allUsernamesRows,
     isLoading: isAllUsernamesLoading,
     error: allUsernamesError,
     refetch: refetchAllUsernames,
-    isRefetching: isAllUsernamesRefetching,
     fetchNextPage: fetchMoreAllUsernames,
     isFetchingNextPage: isAllUsernamesFetchingNext,
     hasMore: hasMoreAllUsernames,
   } = useCollectionItems({
-    sortBy: 'PRICE',
-    sortDirection: 'ASC',
+    sortBy: 'CREATED_DATE',
+    sortDirection: mintSortDirection,
     limit: 25,
   })
 
@@ -57,9 +59,17 @@ const Home = () => {
     setSearchTerm(value)
   }, [])
 
-  const handleResultSelect = useCallback((result: TUsername) => {
-    setSearchTerm(result.username)
-  }, [])
+  const handleResultSelect = useCallback(
+    (result: TUsername) => {
+      setSearchTerm('')
+      navigate(`/username/${result.tokenId}`, {
+        state: {
+          username: result.username,
+        },
+      })
+    },
+    [navigate]
+  )
 
   const handleLoadMoreUsernames = useCallback(() => {
     if (hasMoreAllUsernames) {
@@ -67,10 +77,14 @@ const Home = () => {
     }
   }, [hasMoreAllUsernames, fetchMoreAllUsernames])
 
+  const handleToggleMintSort = useCallback(() => {
+    setMintSortDirection((prev) => (prev === 'DESC' ? 'ASC' : 'DESC'))
+  }, [])
+
   return (
     <Page>
-      <div className="">
-        <section className="flex flex-col py-10 gap-5">
+      <div>
+        <section className="flex flex-col items-center gap-5 py-10">
           <Title mainheading={CONSTANTS.TITLE.MAIN_HEADING} subHeading={CONSTANTS.TITLE.SUB_HEADING} />
 
           <Search
@@ -90,16 +104,19 @@ const Home = () => {
               {
                 name: 'All Usernames',
                 field: (
-                  <AllUsernamesTable
-                    data={allUsernamesRows}
-                    isLoading={isAllUsernamesLoading}
-                    isRefetching={isAllUsernamesRefetching}
-                    error={allUsernamesErrorMessage}
-                    onRetry={refetchAllUsernames}
-                    onLoadMore={hasMoreAllUsernames ? handleLoadMoreUsernames : undefined}
-                    canLoadMore={hasMoreAllUsernames}
-                    isFetchingNextPage={isAllUsernamesFetchingNext}
-                  />
+                  <div className="flex justify-center">
+                    <AllUsernamesTable
+                      data={allUsernamesRows}
+                      isLoading={isAllUsernamesLoading}
+                      error={allUsernamesErrorMessage}
+                      onRetry={refetchAllUsernames}
+                      onLoadMore={hasMoreAllUsernames ? handleLoadMoreUsernames : undefined}
+                      canLoadMore={hasMoreAllUsernames}
+                      isFetchingNextPage={isAllUsernamesFetchingNext}
+                      sortDirection={mintSortDirection}
+                      onToggleSort={handleToggleMintSort}
+                    />
+                  </div>
                 ),
               },
             ]}

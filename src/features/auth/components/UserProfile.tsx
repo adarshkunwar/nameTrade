@@ -12,12 +12,12 @@ export const UserProfile = ({ className = '', showSignOut = true }: UserProfileP
     return null
   }
 
-  const { address, authMethod } = user
+  const { address } = user
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       <div className="flex flex-col">
-        <span className="text-sm font-medium text-white">{authMethod === 'mock' ? 'Preview Mode' : 'Connected'}</span>
+        <span className="text-sm font-medium text-white">Connected</span>
         <span className="text-xs text-[#9BA9C9] font-mono">
           {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown'}
         </span>

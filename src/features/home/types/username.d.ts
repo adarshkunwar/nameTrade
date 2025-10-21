@@ -8,4 +8,5 @@ export type TUsername = {
   bestOfferUsd: string
   rarityRank: string
   ownerAddress: string
+  createdAt: string | null
 }

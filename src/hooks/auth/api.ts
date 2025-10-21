@@ -16,22 +16,6 @@ export const signInWithBase = async (request: SignInRequest): Promise<SignInResp
   }
 }
 
-export const signInWithMock = async (): Promise<SignInResponse> => {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 500))
-
-  // Mock successful response for bypass mode
-  return {
-    accessToken: `mock_token_${Date.now()}`,
-    refreshToken: `mock_refresh_${Date.now()}`,
-    user: {
-      id: 'mock_user',
-      address: 'mock_address',
-      authMethod: 'mock',
-    },
-  }
-}
-
 export const verifyToken = async (request: VerifyTokenRequest): Promise<VerifyTokenResponse> => {
   // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 300))

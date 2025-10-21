@@ -10,6 +10,13 @@
   --color-gray: #8a98a6;
 }
 
+html,
+body {
+  min-height: 100%;
+  background-color: var(--color-background);
+  overscroll-behavior: contain;
+}
+
 .shimmer {
   position: relative;
   overflow: hidden;

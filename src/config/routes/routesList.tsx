@@ -7,7 +7,7 @@ export const RouteList: TRoute[] = [
     component: lazy(() => import('@/features/home')),
   },
   {
-    path: '/username/:username',
+    path: '/username/:tokenId',
     component: lazy(() => import('@/features/username')),
   },
   {
