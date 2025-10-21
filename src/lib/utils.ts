@@ -10,7 +10,7 @@ export const cryptic = () => {
     urlSafeEncrypt: (data: string) =>
       encodeURIComponent(CryptoJS.AES.encrypt(data, import.meta.env.VITE_SECRET_KEY).toString()),
     urlSafeDecrypt: (data: string) =>
-      decodeURIComponent(CryptoJS.AES.decrypt(data, import.meta.env.VITE_SECRET_KEY).toString(CryptoJS.enc.Utf8)),
+      CryptoJS.AES.decrypt(decodeURIComponent(data), import.meta.env.VITE_SECRET_KEY).toString(CryptoJS.enc.Utf8),
   }
 }
 

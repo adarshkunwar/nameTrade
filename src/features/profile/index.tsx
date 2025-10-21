@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import Page from '@/components/ui/Page'
 import Heading from '@/components/ui/Typography'
+import { cryptic } from '@/lib/utils'
 import OwnedUsernamesTable from './components/OwnedUsernamesTable'
 import { useProfileItems } from './hooks/useProfileItems'
 import { walletAddress } from '@/utils/username'
@@ -9,7 +10,15 @@ import { walletAddress } from '@/utils/username'
 const Profile = () => {
   const { walletAddress: walletAddressParam } = useParams()
 
-  const normalizedAddress = useMemo(() => walletAddressParam?.trim() ?? null, [walletAddressParam])
+  const normalizedAddress = useMemo(() => {
+    const raw = walletAddressParam ?? null
+    if (!raw) return null
+    try {
+      return cryptic().urlSafeDecrypt(raw).trim()
+    } catch (_e) {
+      return raw.trim()
+    }
+  }, [walletAddressParam])
 
   const { rows, isLoading, isRefetching, error, refetch, hasMore, fetchNextPage, isFetchingNextPage } = useProfileItems(
     {
