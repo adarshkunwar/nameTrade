@@ -1,0 +1,7 @@
+export const USERNAME_CHAIN_IDENTIFIER = 'base'
+
+export const USERNAME_CONTRACT_ADDRESS =
+  import.meta.env.VITE_USERNAME_CONTRACT_ADDRESS ||
+  '0x03c4738ee98ae44591e1a4a4f3cab6641d95dd9a'
+
+export const USERNAME_ACTIVITY_QUERY_LIMIT = 1

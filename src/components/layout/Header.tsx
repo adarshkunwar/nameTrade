@@ -5,6 +5,7 @@ import Heading from '../ui/Typography'
 import type { RootState } from '@/config/store'
 import { clearAuthToken } from '@/config/store/authSlice'
 import { useBaseAuth } from '@/hooks/auth/useBaseAuth'
+import { cryptic } from '@/lib/utils'
 
 const Header = () => {
   const dispatch = useDispatch()
@@ -23,7 +24,8 @@ const Header = () => {
 
   const handleNavigateToProfile = useCallback(() => {
     if (address) {
-      navigate(`/profile/${address}`)
+      const encryptedAddress = cryptic().urlSafeEncrypt(address)
+      navigate(`/profile/${encryptedAddress}`)
     }
   }, [address, navigate])
 
