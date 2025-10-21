@@ -58,13 +58,12 @@ const Profile = () => {
             title={displayUsername}
             color="white"
             fontWeight={700}
-            onClick={() => copyToClipboard(displayUsername ?? '')}
           />
         </div>
 
         <div className="rounded-lg border border-header bg-header/30 p-4 text-sm text-white">
           <div className="flex flex-col gap-2">
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 cursor-pointer" onClick={() => copyToClipboard(tokenId ?? '')}>
               <span className="text-xs uppercase tracking-wide text-gray">Token ID</span>
               <span className="font-mono break-all text-white">{tokenId ?? 'Unavailable'}</span>
             </div>
