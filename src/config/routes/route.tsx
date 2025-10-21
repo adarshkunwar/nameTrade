@@ -11,7 +11,6 @@ const renderRoutes = (routes: any) => {
         <Route path={child?.path} element={<child.component />} key={`${i}-${j}`} />
       ))
     }
-
     return <Route path={route.path} element={<route.component />} key={i} />
   })
 }
