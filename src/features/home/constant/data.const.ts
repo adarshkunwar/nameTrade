@@ -6,5 +6,10 @@ export const CONSTANTS = {
   },
   TABLE: {
     HEADING: 'Top Auctions',
+    USERNAMES_HEADING: 'All Usernames',
+  },
+  SEARCH: {
+    FETCHING_USERNAMES_ERROR: 'We ran into a problem fetching usernames.',
+    PLACEHOLDER: 'Search usernames',
   },
 }

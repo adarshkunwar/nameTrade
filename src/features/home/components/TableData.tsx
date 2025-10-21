@@ -1,6 +1,4 @@
 import Table from '@/components/ui/Table'
-import Heading from '@/components/ui/Typography'
-import { CONSTANTS } from '../constant/data.const'
 
 const TableData = ({ data }: { data: any[] }) => {
   const columns = [
@@ -37,8 +35,7 @@ const TableData = ({ data }: { data: any[] }) => {
   ]
 
   return (
-    <div className="mx-auto flex flex-col gap-2">
-      <Heading variant="h3" title={CONSTANTS.TABLE.HEADING} color="white" fontWeight={700} />
+    <div className="rounded-md border border-header ">
       <Table data={data} columns={columns} />
     </div>
   )

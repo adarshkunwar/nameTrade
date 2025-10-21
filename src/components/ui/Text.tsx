@@ -1,8 +1,8 @@
 import type { InputHTMLAttributes } from 'react'
 import type { FC } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
-import { CiAt, CiSearch } from 'react-icons/ci'
-import { GoBriefcase } from 'react-icons/go'
+import { ICONS } from '@/assets/icons/icon'
+import { Spinner } from './Spinner'
 
 interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   name: string
@@ -11,6 +11,7 @@ interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'si
   placeholder?: string
   size?: 'small' | 'medium'
   type?: 'text' | 'email' | 'password' | 'search'
+  isLoading?: boolean
 }
 
 export const TextField: FC<TextFieldProps> = ({
@@ -20,6 +21,7 @@ export const TextField: FC<TextFieldProps> = ({
   size = 'small',
   placeholder = '',
   type = 'text',
+  isLoading = false,
   ...rest
 }) => {
   const { control } = useFormContext()
@@ -27,11 +29,11 @@ export const TextField: FC<TextFieldProps> = ({
   const Icon = () => {
     switch (type) {
       case 'search':
-        return <CiSearch className="text-white" />
+        return ICONS.search
       case 'email':
-        return <CiAt className="text-white" />
+        return ICONS.email
       case 'password':
-        return <GoBriefcase className="text-white" />
+        return ICONS.password
       default:
         return null
     }
@@ -43,9 +45,11 @@ export const TextField: FC<TextFieldProps> = ({
       control={control}
       render={({ field, fieldState: { error } }) => (
         <>
-          <label className="font-bold block mb-6 text-white">
-            {customLabel} {required ? <span style={{ color: '#FF1943' }}>*</span> : ''}
-          </label>
+          {customLabel ? (
+            <label className="mb-6 block font-bold text-white">
+              {customLabel} {required ? <span style={{ color: '#FF1943' }}>*</span> : ''}
+            </label>
+          ) : null}
           <div className="flex items-center w-full bg-primary p-4 rounded-md gap-8">
             <Icon />
             <input
@@ -55,6 +59,12 @@ export const TextField: FC<TextFieldProps> = ({
               {...rest}
               placeholder={placeholder}
             />
+
+            {isLoading && (
+              <div className="text-secondary">
+                <Spinner size="sm" />
+              </div>
+            )}
           </div>
           {error?.message && <p className="text-red-500 text-sm">{error?.message}</p>}
         </>
