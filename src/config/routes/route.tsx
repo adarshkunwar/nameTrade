@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import { RouteList } from './routesList'
 import Layout from '@/components/layout/Layout'
 import Page404 from '@/components/layout/page404'

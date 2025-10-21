@@ -6,29 +6,48 @@ import HighestBid from './components/HighestBid'
 import { BID_HISTORY_DATA, HIGHEST_BID_DATA } from './constant/table.const'
 import BidHistory from './components/BidHistory'
 import { copyToClipboard, cryptic } from '@/lib/utils'
+import { useUsername } from './hooks/useUsername'
 
 type UsernameLocationState = {
   username?: string
 }
 
 const Profile = () => {
-  const { tokenId: tokenIdParam } = useParams()
-  const decryptedTokenId = cryptic().urlSafeDecrypt(tokenIdParam ?? '')
-
   const location = useLocation()
   const state = (location.state ?? {}) as UsernameLocationState
+
+  const { tokenId: tokenIdParam } = useParams()
+  const decryptedTokenId = cryptic().urlSafeDecrypt(tokenIdParam ?? '')
+  const tokenId = decryptedTokenId || null
+
   const suffix = ENV.VITE_SUFFIX ?? ''
 
   const usernameFromState = typeof state.username === 'string' ? state.username : ''
-  const hasUsername = usernameFromState.length > 0
-  const hasSuffix = hasUsername && Boolean(suffix) && usernameFromState.endsWith(suffix)
-  const baseUsername = hasUsername
+  const hasUsernameFromState = usernameFromState.length > 0
+
+  const {
+    username: fetchedUsername,
+    isLoading: isUsernameFetching,
+    isError: isUsernameError,
+  } = useUsername({
+    tokenId,
+    enabled: !hasUsernameFromState && Boolean(tokenId),
+  })
+
+  const resolvedUsername = hasUsernameFromState ? usernameFromState : fetchedUsername ?? ''
+  const hasResolvedUsername = resolvedUsername.length > 0
+  const hasSuffix = hasResolvedUsername && Boolean(suffix) && resolvedUsername.endsWith(suffix)
+  const baseUsername = hasResolvedUsername
     ? hasSuffix
-      ? usernameFromState.slice(0, usernameFromState.length - suffix.length)
-      : usernameFromState
+      ? resolvedUsername.slice(0, resolvedUsername.length - suffix.length)
+      : resolvedUsername
     : ''
-  const displayUsername = hasUsername ? baseUsername : decryptedTokenId ?? 'Username'
-  const tokenId = decryptedTokenId ?? null
+  const displayUsername =
+    baseUsername.length > 0
+      ? baseUsername
+      : isUsernameFetching && !isUsernameError
+        ? ''
+        : decryptedTokenId ?? 'Username'
 
   return (
     <Page>
