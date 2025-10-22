@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import { RouteList } from './routesList'
 import Layout from '@/components/layout/Layout'
 import Page404 from '@/components/layout/page404'
@@ -11,7 +11,6 @@ const renderRoutes = (routes: any) => {
         <Route path={child?.path} element={<child.component />} key={`${i}-${j}`} />
       ))
     }
-
     return <Route path={route.path} element={<route.component />} key={i} />
   })
 }

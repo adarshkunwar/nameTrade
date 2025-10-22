@@ -1,6 +1,5 @@
-
- import axios, {type AxiosError } from 'axios'
-import {store} from '@/config/store'
+import axios, { type AxiosError } from 'axios'
+import { store } from '@/config/store'
 
 export const AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_APP_API_URL || '',
@@ -8,13 +7,14 @@ export const AxiosInstance = axios.create({
     Accept: '*/*',
     'Content-Type': 'application/json',
   },
+  timeout: isNaN(Number(import.meta.env.VITE_APP_API_TIMEOUT)) ? 10000 : Number(import.meta.env.VITE_APP_API_TIMEOUT),
 })
 
 // Request interceptor
 AxiosInstance.interceptors.request.use(
   (config: any) => {
     const state = store.getState().auth
-    const {accessToken, guestToken} = state
+    const { accessToken, guestToken } = state
 
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`
@@ -27,5 +27,3 @@ AxiosInstance.interceptors.request.use(
     return Promise.reject(error)
   }
 )
-   
-

@@ -1,6 +1,15 @@
 import Table from '@/components/ui/Table'
+import { TABLE_DATA } from '../constant/table.const'
 
-const TableData = ({ data }: { data: any[] }) => {
+const TableData = () => {
+  const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => {
+    const data = TABLE_DATA[0]
+    return {
+      ...data,
+      username: item + 1,
+    }
+  })
+
   const columns = [
     {
       accessorKey: 'username',
