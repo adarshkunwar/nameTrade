@@ -3,19 +3,10 @@ import Title from './components/Title'
 import { CONSTANTS } from './constant/data.const'
 import Search from './components/search'
 import TableData from './components/TableData'
-import { TABLE_DATA } from './constant/table.const'
 import AllUsernamesTable from './components/AllUsernamesTable'
 import Page from '@/components/ui/Page'
 
 const Home = () => {
-  const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => {
-    const data = TABLE_DATA[0]
-    return {
-      ...data,
-      username: item + 1,
-    }
-  })
-
   return (
     <Page>
       <div>
@@ -28,7 +19,7 @@ const Home = () => {
         <section className="py-6">
           <Tabs
             tabs={[
-              { name: 'Top Auctions', field: <TableData data={data} />, key: 'top+auctions' },
+              { name: 'Top Auctions', field: <TableData />, key: 'top+auctions' },
               {
                 name: 'All Usernames',
                 key: 'all+usernames',
