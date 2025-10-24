@@ -2,9 +2,8 @@ import type { Address } from 'viem'
 import type { UseMutationResult } from '@tanstack/react-query'
 import { resolveDefaultNetwork } from '@/config/contract/config'
 import { normalizeAddress, toBigInt } from '@/utils/address'
-import type { NameTradeWriteResult } from '@/types/trade'
 import { useNameTradeWriteMutation, type NameTradeWriteHookOptions } from '@/hooks/contract/useNameTradeWrite'
-import { NameTradeOfferType } from '@/types/trade'
+import type { NameTradeWriteResult, NameTradeOfferType } from '../../types/trade'
 
 export interface UseNameTradeMakeNativeOfferVariables {
   nft: string | Address
