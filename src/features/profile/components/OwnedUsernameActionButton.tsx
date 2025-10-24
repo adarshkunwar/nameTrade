@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import Button from '@/components/ui/Button';
 import { useNameTradeCancel, useNameTradeList } from '@/hooks/contract/useNameTradeListingsMutations';
-import { useNameTradeStartAuction } from '@/hooks/contract/useNameTradeAuctionsMutations';
+import { useNameTradeCancelAuction, useNameTradeStartAuction } from '@/hooks/contract/useNameTradeAuctionsMutations';
 import { parseEther, type Address } from 'viem';
 import { useBaseAuth } from '@/hooks/auth/useBaseAuth';
 import { getNameTradePublicClient, getNameTradeWalletClient } from '@/config/contract/client';
@@ -10,9 +10,9 @@ import ListModal from './ListModal';
 import { ERC721_APPROVAL_ABI } from '../constant/approval.const';
 import AuctionModal from './AuctionModal';
 
-type ActionsProps = { contractAddress: string; tokenId: string; isListed: boolean };
+type ActionsProps = { contractAddress: string; tokenId: string; isListed: boolean; isAuctioned: boolean };
 
-function OwnedUsernameActions({ contractAddress, tokenId, isListed }: ActionsProps) {
+function OwnedUsernameActions({ contractAddress, tokenId, isListed, isAuctioned }: ActionsProps) {
   const [listError, setListError] = useState<string | null>(null);
   const [auctionError, setAuctionError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,6 +20,7 @@ function OwnedUsernameActions({ contractAddress, tokenId, isListed }: ActionsPro
   const listMutation = useNameTradeList();
   const cancelMutation = useNameTradeCancel();
   const startAuctionMutation = useNameTradeStartAuction();
+  const cancelAuctionMutation = useNameTradeCancelAuction();
   const { switchToNameTradeChain } = useBaseAuth();
 
   const ensureApproved = useCallback(async (nftAddress: string) => {
@@ -125,6 +126,14 @@ function OwnedUsernameActions({ contractAddress, tokenId, isListed }: ActionsPro
     });
   };
 
+  const handleCancelAuction = async () => {
+    await switchToNameTradeChain();
+    await cancelAuctionMutation.mutateAsync({
+      nft: contractAddress,
+      tokenId,
+    });
+  };
+
   if (isListed) {
     return (
       <Button
@@ -135,6 +144,20 @@ function OwnedUsernameActions({ contractAddress, tokenId, isListed }: ActionsPro
         disabled={cancelMutation.isPending}
       >
         Cancel Listing
+      </Button>
+    );
+  }
+
+  if (isAuctioned) {
+    return (
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={handleCancelAuction}
+        loading={cancelAuctionMutation.isPending}
+        disabled={cancelAuctionMutation.isPending}
+      >
+        Cancel Auction
       </Button>
     );
   }

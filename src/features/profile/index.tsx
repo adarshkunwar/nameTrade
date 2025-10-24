@@ -5,16 +5,22 @@ import Heading from '@/components/ui/Typography'
 import { cryptic } from '@/lib/utils'
 import OwnedUsernamesTable from './components/OwnedUsernamesTable'
 import { useGetListedNfts } from '@/hooks/contract/useGetListedNfts';
+import { useGetActiveAuctions } from '@/hooks/contract/useGetActiveAuctions';
 import { useProfileItems } from './hooks/useProfileItems'
 import { walletAddress } from '@/utils/username'
 
 const Profile = () => {
   const { walletAddress: walletAddressParam } = useParams()
   const { listings: listedNfts } = useGetListedNfts();
+  const { auctions: activeAuctions } = useGetActiveAuctions();
 
   const listedTokenIds = useMemo(() => {
     return new Set(listedNfts.map((item) => item.tokenId.toString()));
   }, [listedNfts]);
+
+  const auctionedTokenIds = useMemo(() => {
+    return new Set(activeAuctions.map((item) => item.tokenId.toString()));
+  }, [activeAuctions]);
 
   const normalizedAddress = useMemo(() => {
     const raw = walletAddressParam ?? null
@@ -71,6 +77,7 @@ const Profile = () => {
             canLoadMore={hasNextPage}
             isFetchingNextPage={isFetchingNextPage}
             listedTokenIds={listedTokenIds}
+            auctionedTokenIds={auctionedTokenIds}
           />
         )}
       </div>

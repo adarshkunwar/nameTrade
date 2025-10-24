@@ -19,6 +19,7 @@ interface OwnedUsernamesTableProps {
   canLoadMore?: boolean;
   isFetchingNextPage?: boolean;
   listedTokenIds: Set<string>;
+  auctionedTokenIds: Set<string>;
 }
 
 const OwnedUsernamesTable = ({
@@ -31,6 +32,7 @@ const OwnedUsernamesTable = ({
   canLoadMore = false,
   isFetchingNextPage = false,
   listedTokenIds,
+  auctionedTokenIds,
 }: OwnedUsernamesTableProps) => {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -70,18 +72,21 @@ const OwnedUsernamesTable = ({
         accessorKey: 'actions',
         header: 'Actions',
         cell: ({ row }: any) => {
-          const isListed = listedTokenIds.has(row.original.tokenId.toString());
+          const ownedTokenId = row.original.tokenId.toString();
+          const isListed = listedTokenIds.has(ownedTokenId);
+          const isAuctioned = auctionedTokenIds.has(ownedTokenId);
           return (
             <OwnedUsernameActions
               contractAddress={row.original.contractAddress}
               tokenId={row.original.tokenId}
               isListed={isListed}
+              isAuctioned={isAuctioned}
             />
           );
         },
       },
     ],
-    [listedTokenIds] // Re-create columns when listedTokenIds changes
+    [listedTokenIds, auctionedTokenIds] // Re-create columns when listedTokenIds or auctionedTokenIds changes
   )
 
   const showSkeleton = isLoading && data.length === 0

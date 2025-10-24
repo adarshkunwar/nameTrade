@@ -66,6 +66,33 @@ export const useNameTradeBid = (
   })
 }
 
+export interface UseNameTradeCancelAuctionVariables {
+  nft: string | Address;
+  tokenId: bigint | number | string;
+}
+
+export const useNameTradeCancelAuction = (
+  options: NameTradeWriteHookOptions<UseNameTradeCancelAuctionVariables> = {},
+): UseMutationResult<NameTradeWriteResult, Error, UseNameTradeCancelAuctionVariables> => {
+  const resolvedNetwork = options.network ?? resolveDefaultNetwork();
+
+  return useNameTradeWriteMutation<UseNameTradeCancelAuctionVariables>({
+    ...options,
+    functionName: 'cancelAuction',
+    getArgs: (variables) => {
+      return [normalizeAddress(variables.nft), toBigInt(variables.tokenId)];
+    },
+    invalidateQueries: ({ variables }) => {
+      const nft = normalizeAddress(variables.nft);
+      const tokenId = toBigInt(variables.tokenId);
+      return [
+        ['nameTrade', resolvedNetwork, 'getAuction', nft, tokenId],
+        ['nameTrade', resolvedNetwork, 'auctions', nft, tokenId],
+      ];
+    },
+  });
+};
+
 export interface UseNameTradeEndAuctionVariables {
   nft: string | Address
   tokenId: bigint | number | string
