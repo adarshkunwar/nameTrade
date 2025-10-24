@@ -1,6 +1,7 @@
+import { HIGHEST_BID_DATA } from '../constant/table.const'
 import Table from '@/components/ui/Table'
 
-const HighestBid = ({ data }: { data: any[] }) => {
+const HighestBid = () => {
   const columns = [
     {
       accessorKey: 'highestBid',
@@ -36,7 +37,7 @@ const HighestBid = ({ data }: { data: any[] }) => {
 
   return (
     <div className="rounded-md border border-header ">
-      <Table data={data} columns={columns} />
+      <Table data={HIGHEST_BID_DATA} columns={columns} />
     </div>
   )
 }
