@@ -34,39 +34,40 @@ const Header = () => {
   }, [signInWithBase])
 
   return (
-    <header className="bg-header py-4 px-8 flex justify-between items-center sticky top-0 z-10">
-      <Heading variant="h1" title="NameTrade" color="white" fontWeight={700} onClick={handleNavigateHome} />
-      <div className="flex items-center gap-4 text-sm">
-      
-        {isAuthenticated && address ? (
-          <button
-            type="button"
-            onClick={handleNavigateToProfile}
-            className="rounded-full border border-white/30 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition hover:border-white/60 hover:bg-white/10"
-          >
-            My Profile
-          </button>
-        ) : null}
-        {isAuthenticated ? (
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="rounded-full border border-white/30 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition hover:border-white/60 hover:bg-white/10"
-          >
-            Sign out
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={handleSignIn}
-            disabled={isSigningIn}
-            className="rounded-full border border-white/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition hover:border-white/40 hover:bg-white/10 disabled:opacity-60 disabled:cursor-not-allowed"
-            aria-label="Sign in with Base"
-            title={signInError ?? 'Sign in with Base'}
-          >
-            {isSigningIn ? 'Connecting…' : 'Sign in'}
-          </button>
-        )}
+    <header className="bg-header py-3 px-8  sticky top-0 z-10 ">
+      <div className="sm:max-w-[760px] mx-auto w-full flex justify-between items-center">
+        <Heading variant="h2" title="NameTrade" color="white" fontWeight={700} onClick={handleNavigateHome} />
+        <div className="flex items-center gap-4 text-sm">
+          {isAuthenticated && address ? (
+            <button
+              type="button"
+              onClick={handleNavigateToProfile}
+              className="rounded-full border border-white/30 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition hover:border-white/60 hover:bg-white/10"
+            >
+              My Profile
+            </button>
+          ) : null}
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="rounded-full border border-white/30 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition hover:border-white/60 hover:bg-white/10"
+            >
+              Sign out
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSignIn}
+              disabled={isSigningIn}
+              className="rounded-full border border-white/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition hover:border-white/40 hover:bg-white/10 disabled:opacity-60 disabled:cursor-not-allowed"
+              aria-label="Sign in with Base"
+              title={signInError ?? 'Sign in with Base'}
+            >
+              {isSigningIn ? 'Connecting…' : 'Sign in'}
+            </button>
+          )}
+        </div>
       </div>
     </header>
   )

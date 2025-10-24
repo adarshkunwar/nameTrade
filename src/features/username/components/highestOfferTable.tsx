@@ -10,7 +10,6 @@ const HighestOffer = () => {
       cell: ({ row }: any) => (
         <div className="flex flex-col gap-1">
           <div className="font-semibold text-white">{walletAddress(row.original.address)}</div>
-
         </div>
       ),
     },
