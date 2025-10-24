@@ -26,7 +26,8 @@ const Table = forwardRef<HTMLDivElement, TableProps>(
       return override ?? (definedWidth ? `${definedWidth}px` : '100%')
     }
     return (
-      <div ref={ref} className="w-full overflow-x-auto border border-header rounded-md">
+      <>
+      <div className="w-full overflow-x-auto border border-header rounded-md">
         <table className="w-full border-collapse">
           <thead className="bg-primary text-white">
             {headerGroups.map((hg) => (
@@ -62,6 +63,8 @@ const Table = forwardRef<HTMLDivElement, TableProps>(
           </tbody>
         </table>
       </div>
+      <div ref={ref}></div>
+      </>
     )
   }
 )
