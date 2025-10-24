@@ -2,10 +2,10 @@ import { Tabs } from '@/components/ui/Tabs'
 import Title from './components/Title'
 import { CONSTANTS } from './constant/data.const'
 import Search from './components/search'
-import TopAuctions from '@/features/home/components/TopAuctions';
 import AllUsernamesTable from './components/AllUsernamesTable'
 import Page from '@/components/ui/Page'
-import ForSaleTable from './components/ForSaleTable'
+import ForSaleTable from './components/ForSaleTable';
+import AuctionsTable from './components/AuctionsTable';
 
 const Home = () => {
   return (
@@ -20,7 +20,7 @@ const Home = () => {
         <section className="py-6">
           <Tabs
             tabs={[
-              { name: 'Top Auctions', field: <TopAuctions />, key: 'top+auctions' },
+              { name: 'Top Auctions', field: <AuctionsTable />, key: 'top+auctions' },
               {
                 name: 'All Usernames',
                 key: 'all+usernames',

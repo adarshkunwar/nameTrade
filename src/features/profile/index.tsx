@@ -4,11 +4,17 @@ import Page from '@/components/ui/Page'
 import Heading from '@/components/ui/Typography'
 import { cryptic } from '@/lib/utils'
 import OwnedUsernamesTable from './components/OwnedUsernamesTable'
+import { useGetListedNfts } from '@/hooks/contract/useGetListedNfts';
 import { useProfileItems } from './hooks/useProfileItems'
 import { walletAddress } from '@/utils/username'
 
 const Profile = () => {
   const { walletAddress: walletAddressParam } = useParams()
+  const { listings: listedNfts } = useGetListedNfts();
+
+  const listedTokenIds = useMemo(() => {
+    return new Set(listedNfts.map((item) => item.tokenId.toString()));
+  }, [listedNfts]);
 
   const normalizedAddress = useMemo(() => {
     const raw = walletAddressParam ?? null
@@ -20,7 +26,7 @@ const Profile = () => {
     }
   }, [walletAddressParam])
 
-  const { rows, isLoading, isRefetching, error, refetch, hasMore, fetchNextPage, isFetchingNextPage } = useProfileItems(
+  const { rows, isLoading, isRefetching, error, refetch, hasNextPage, fetchNextPage, isFetchingNextPage } = useProfileItems(
     {
       address: normalizedAddress,
       limit: 50,
@@ -32,10 +38,10 @@ const Profile = () => {
   const errorMessage = error instanceof Error ? error.message : error ? 'Unknown error' : null
 
   const handleLoadMore = useCallback(() => {
-    if (hasMore) {
+    if (hasNextPage) {
       void fetchNextPage()
     }
-  }, [hasMore, fetchNextPage])
+  }, [hasNextPage, fetchNextPage])
 
   const displayAddress = normalizedAddress ? walletAddress(normalizedAddress) : null
   const headingTitle = normalizedAddress ? `Profile of ${displayAddress}` : 'Profile'
@@ -61,9 +67,10 @@ const Profile = () => {
             isRefetching={isRefetching}
             error={errorMessage}
             onRetry={refetch}
-            onLoadMore={hasMore ? handleLoadMore : undefined}
-            canLoadMore={hasMore}
+            onLoadMore={handleLoadMore}
+            canLoadMore={hasNextPage}
             isFetchingNextPage={isFetchingNextPage}
+            listedTokenIds={listedTokenIds}
           />
         )}
       </div>

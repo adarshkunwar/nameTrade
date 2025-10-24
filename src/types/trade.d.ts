@@ -27,14 +27,15 @@ export interface NameTradeOffer {
 }
 
 export interface NameTradeAuction {
-  nft: Address
-  tokenId: bigint
-  seller: Address
-  reservePrice: bigint
-  endTime: bigint
-  highestBidder: Address
-  highestBid: bigint
-  settled: boolean
+  nft: Address;
+  tokenId: bigint;
+  seller: Address;
+  reservePrice: bigint;
+  endTime: bigint;
+  highestBidder: Address;
+  highestBid: bigint;
+  settled: boolean;
+  name?: string | null;
 }
 
 export type NameTradeApprovalStatus = boolean

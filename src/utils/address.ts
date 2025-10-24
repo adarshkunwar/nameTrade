@@ -58,6 +58,7 @@ export const mapListing = (raw: any): NameTradeListing | null => {
   }
 };
 
+
 export const mapOffer = (raw: any): NameTradeOffer | null => {
   if (!raw) {
     return null
@@ -84,20 +85,36 @@ export const mapOffer = (raw: any): NameTradeOffer | null => {
 
 export const mapAuction = (raw: any): NameTradeAuction | null => {
   if (!raw) {
-    return null
+    return null;
   }
 
-  const nft = raw.nft ?? raw.nftAddr
-  const tokenId = raw.tokenId ?? raw.tokenIdNum
+  const isArray = Array.isArray(raw);
+  const nft = isArray ? raw[0] : raw.nft ?? raw.nftAddr;
+  const tokenId = isArray ? raw[1] : raw.tokenId ?? raw.tokenIdNum;
+  const seller = isArray ? raw[2] : raw.seller;
+  const reservePrice = isArray ? raw[3] : raw.reservePrice;
+  const endTime = isArray ? raw[4] : raw.endTime;
+  const highestBidder = isArray ? raw[5] : raw.highestBidder;
+  const highestBid = isArray ? raw[6] : raw.highestBid;
+  const settled = isArray ? raw[7] : raw.settled;
 
-  return {
-    nft: normalizeAddress(nft),
-    tokenId: toBigInt(tokenId),
-    seller: normalizeAddress(raw.seller),
-    reservePrice: toBigInt(raw.reservePrice ?? 0),
-    endTime: toBigInt(raw.endTime ?? 0),
-    highestBidder: normalizeAddress(raw.highestBidder ?? ZERO_ADDRESS),
-    highestBid: toBigInt(raw.highestBid ?? 0),
-    settled: Boolean(raw.settled),
+  if (!nft || tokenId === undefined || !seller || reservePrice === undefined || endTime === undefined) {
+    return null;
   }
-}
+
+  try {
+    return {
+      nft: normalizeAddress(nft),
+      tokenId: toBigInt(tokenId),
+      seller: normalizeAddress(seller),
+      reservePrice: toBigInt(reservePrice),
+      endTime: toBigInt(endTime),
+      highestBidder: normalizeAddress(highestBidder ?? ZERO_ADDRESS),
+      highestBid: toBigInt(highestBid ?? 0),
+      settled: Boolean(settled),
+    };
+  } catch (error) {
+    console.error('Failed to map auction:', { raw, error });
+    return null;
+  }
+};

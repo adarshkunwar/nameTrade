@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom'
 import Table from '@/components/ui/Table'
 import Heading from '@/components/ui/Typography'
@@ -10,14 +10,15 @@ import { formatDateTime } from '@/utils/date'
 import OwnedUsernameActions from './OwnedUsernameActionButton'
 
 interface OwnedUsernamesTableProps {
-  data: TProfileUsername[]
-  isLoading: boolean
-  isRefetching: boolean
-  error: string | null
-  onRetry: () => void | Promise<unknown>
-  onLoadMore?: () => void
-  canLoadMore?: boolean
-  isFetchingNextPage?: boolean
+  data: TProfileUsername[];
+  isLoading: boolean;
+  isRefetching: boolean;
+  error: string | null;
+  onRetry: () => void | Promise<unknown>;
+  onLoadMore?: () => void;
+  canLoadMore?: boolean;
+  isFetchingNextPage?: boolean;
+  listedTokenIds: Set<string>;
 }
 
 const OwnedUsernamesTable = ({
@@ -29,8 +30,9 @@ const OwnedUsernamesTable = ({
   onLoadMore,
   canLoadMore = false,
   isFetchingNextPage = false,
+  listedTokenIds,
 }: OwnedUsernamesTableProps) => {
-  const loadMoreRef = useRef<HTMLDivElement | null>(null)
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const columns = useMemo(
     () => [
@@ -67,12 +69,19 @@ const OwnedUsernamesTable = ({
       {
         accessorKey: 'actions',
         header: 'Actions',
-        cell: ({ row }: any) => (
-          <OwnedUsernameActions contractAddress={row.original.contractAddress} tokenId={row.original.tokenId} />
-        ),
+        cell: ({ row }: any) => {
+          const isListed = listedTokenIds.has(row.original.tokenId.toString());
+          return (
+            <OwnedUsernameActions
+              contractAddress={row.original.contractAddress}
+              tokenId={row.original.tokenId}
+              isListed={isListed}
+            />
+          );
+        },
       },
     ],
-    []
+    [listedTokenIds] // Re-create columns when listedTokenIds changes
   )
 
   const showSkeleton = isLoading && data.length === 0

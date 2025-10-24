@@ -94,6 +94,33 @@ export const useNameTradeUpdateAllowedBuyers = (
   })
 }
 
+export interface UseNameTradeCancelVariables {
+  nft: string | Address;
+  tokenId: bigint | number | string;
+}
+
+export const useNameTradeCancel = (
+  options: NameTradeWriteHookOptions<UseNameTradeCancelVariables> = {},
+): UseMutationResult<NameTradeWriteResult, Error, UseNameTradeCancelVariables> => {
+  const resolvedNetwork = options.network ?? resolveDefaultNetwork();
+
+  return useNameTradeWriteMutation<UseNameTradeCancelVariables>({
+    ...options,
+    functionName: 'cancelListing',
+    getArgs: (variables) => {
+      return [normalizeAddress(variables.nft), toBigInt(variables.tokenId)];
+    },
+    invalidateQueries: ({ variables }) => {
+      const nft = normalizeAddress(variables.nft);
+      const tokenId = toBigInt(variables.tokenId);
+      return [
+        ['nameTrade', resolvedNetwork, 'getListing', nft, tokenId],
+        ['nameTrade', resolvedNetwork, 'listings', nft, tokenId],
+      ];
+    },
+  });
+};
+
 export interface UseNameTradeCancelListingVariables {
   nft: string | Address
   tokenId: bigint | number | string
