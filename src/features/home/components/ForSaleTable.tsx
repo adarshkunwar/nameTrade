@@ -88,7 +88,7 @@ const AllUsernamesTable = () => {
         header: "",
         cell: ({ row }: any) => (
           <span className="text-sm text-white">
-            <Button variant="secondary" size="sm">Offer</Button>
+            <Button variant="secondary" size="sm">Buy</Button>
           </span>
         ),
       },

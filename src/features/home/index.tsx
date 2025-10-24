@@ -5,6 +5,7 @@ import Search from './components/search'
 import TableData from './components/TableData'
 import AllUsernamesTable from './components/AllUsernamesTable'
 import Page from '@/components/ui/Page'
+import ForSaleTable from './components/ForSaleTable'
 
 const Home = () => {
   return (
@@ -26,6 +27,15 @@ const Home = () => {
                 field: (
                   <div className="flex justify-center">
                     <AllUsernamesTable />
+                  </div>
+                ),
+              },
+              {
+                name: 'For Sale',
+                key: 'for+sale',
+                field: (
+                  <div className="flex justify-center">
+                    <ForSaleTable />
                   </div>
                 ),
               },

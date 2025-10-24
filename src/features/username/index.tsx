@@ -5,12 +5,13 @@ import { useParams } from 'react-router-dom'
 import HighestBidTable from './components/highestBidTable'
 import { BID_HISTORY_DATA } from './constant/table.const'
 import BidHistory from './components/BidHistory'
-import { copyToClipboard, cryptic } from '@/lib/utils'
+import {  cryptic } from '@/lib/utils'
 import { useUsername } from './hooks/useUsername'
 import PlaceABidModal from './components/PlaceABidModal'
 import HighestOfferTable from './components/highestOfferTable'
 import Timer from '@/components/ui/Timer'
 import PlaceAnOfferModal from './components/placeAnOfferModal'
+import { walletAddress } from '@/utils/username'
 
 const Profile = () => {
   const { VITE_SUFFIX } = ENV
@@ -41,36 +42,28 @@ const Profile = () => {
       ? baseUsername
       : isUsernameFetching && !isUsernameError
       ? ''
-      : decryptedTokenId ?? 'Username'
+      : walletAddress(decryptedTokenId ?? 'Username')
 
   return (
     <Page>
       <div className="flex flex-col gap-5 mt-5">
         <div className="flex justify-between w-full">
-          <Heading variant="h2" title={displayUsername} color="white" fontWeight={700} />
-          <Timer targetDate={new Date(Date.now() + 1000 * 60 * 60 * 24)} />
+          <Heading variant="h2" title={displayUsername} color="white" fontWeight={700} />      
         </div>
-
-        <div className="rounded-lg border border-header bg-header/30 p-4 text-sm text-white">
-          <div className="flex flex-col gap-2">
-            <div className="flex flex-col gap-1 cursor-pointer" onClick={() => copyToClipboard(tokenId ?? '')}>
-              <span className="text-xs uppercase tracking-wide text-gray">Token ID</span>
-              <span className="font-mono break-all text-white">{tokenId ?? 'Unavailable'}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex gap-2">
-          <div className="flex flex-col gap-2">
-            <HighestBidTable />
-            <PlaceABidModal username={displayUsername} />
-          </div>
+        <div className="flex flex-col md:flex-row gap-2">
           <div className="flex flex-col gap-2">
             <HighestOfferTable />
             <PlaceAnOfferModal username={displayUsername} />
           </div>
+      
+          <div className="flex flex-col gap-2">
+            <HighestBidTable />
+            <PlaceABidModal username={displayUsername} />
+            <div className="flex justify-center md:justify-end">
+           <Timer targetDate={new Date(Date.now() + 1000 * 60 * 60 * 24)} />
+           </div>
+          </div>
         </div>
-
         <div>
           <BidHistory data={BID_HISTORY_DATA} />
         </div>

@@ -1,35 +1,25 @@
 import Table from '@/components/ui/Table'
 import { HIGHEST_OFFER_DATA } from '../constant/table.const'
+import { walletAddress } from '@/utils/username'
 
 const HighestOffer = () => {
   const columns = [
     {
-      accessorKey: 'highestOffer',
-      header: 'Highest Offer',
+      accessorKey: 'address',
+      header: 'Address',
       cell: ({ row }: any) => (
         <div className="flex flex-col gap-1">
-          <div className="font-semibold text-white">{row.original.highestOffer}</div>
-          <div className="text-sm text-secondary">~ {row.original.offerApprox}</div>
+          <div className="font-semibold text-white">{walletAddress(row.original.address)}</div>
+
         </div>
       ),
     },
     {
-      accessorKey: 'offerStep',
-      header: 'Offer Step',
-      cell: ({ row }: any) => (
-        <div className="flex flex-col gap-1">
-          <div className="font-semibold text-white">{row.original.offerStep}</div>
-          <div className="text-sm text-gray">~ {row.original.offerStepApprox}</div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'minimumOffer',
-      header: 'Minimum Offer',
+      accessorKey: 'offer',
+      header: 'Offer',
       cell: ({ row }: any) => (
         <div className="flex flex-col gap-0">
-          <div className="font-semibold text-white">{row.original.minimumOffer}</div>
-          <div className="text-sm text-gray">~ {row.original.minimumOfferApprox}</div>
+          <div className="font-semibold text-white">{row.original.offer}</div>
         </div>
       ),
     },

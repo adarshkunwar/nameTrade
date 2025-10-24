@@ -85,7 +85,7 @@ export const useNameTradeWriteMutation = <TVariables>(
         },
       }
     },
-    onSuccess: async (result, variables, context) => {
+    onSuccess: async (result, variables, context, mutation) => {
       const invalidateDescriptors =
         typeof config.invalidateQueries === 'function'
           ? config.invalidateQueries({ variables, result })
@@ -94,13 +94,13 @@ export const useNameTradeWriteMutation = <TVariables>(
       if (invalidateDescriptors?.length) {
         await Promise.all(invalidateDescriptors.map((key) => queryClient.invalidateQueries({ queryKey: key })))
       }
-      await onSuccess?.(result, variables, context)
+      await onSuccess?.(result, variables, context, mutation)
     },
-    onError: async (error, variables, context) => {
-      await onError?.(error, variables, context)
+    onError: async (error, variables, context, mutation) => {
+      await onError?.(error, variables, context, mutation)
     },
-    onSettled: async (result, error, variables, context) => {
-      await onSettled?.(result, error, variables, context)
+    onSettled: async (result, error, variables, context, mutation) => {
+      await onSettled?.(result, error, variables, context, mutation)
     },
   })
 }

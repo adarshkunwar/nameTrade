@@ -34,10 +34,8 @@ export const HIGHEST_BID_DATA = [
 
 export const HIGHEST_OFFER_DATA = [
   {
-    highestOffer: '$100',
-    highestOfferApprox: '$100',
-    offerStep: '$10',
-    offerStepApprox: '$10',
+    address: '0x1234567890123456789012345678901234567890',
+    offer: '$100',
     minimumOffer: '$50',
     minimumOfferApprox: '$50',
   },
