@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { getNameFromTokenId } from '@/features/home/api/getNameFromTokenId';
 import { mapListing, mapOffer } from '@/utils/address';
 import { resolveNameTradeContractConfig, type NameTradeNetwork } from '@/config/contract/config';
 import { getNameTradePublicClient } from '@/config/contract/client';
@@ -114,7 +115,8 @@ export const useGetListedNfts = (options?: { network?: NameTradeNetwork; rpcUrlO
               // Silently fail if offers can't be fetched
             }
 
-            results.push({ ...listing, offers });
+            const name = await getNameFromTokenId(tokenId.toString());
+            results.push({ ...listing, offers, name });
           } catch (listingErr) {
             // Silently fail if a single listing can't be fetched
           }

@@ -6,12 +6,13 @@ export enum NameTradeOfferType {
 }
 
 export interface NameTradeListing {
-  nft: Address
-  tokenId: bigint
-  seller: Address
-  price: bigint
-  allowedBuyers: Address[]
-  offers: NameTradeOffer[]
+  nft: Address;
+  tokenId: bigint;
+  seller: Address;
+  price: bigint;
+  allowedBuyers: Address[];
+  offers: NameTradeOffer[];
+  name?: string | null;
 }
 
 export interface NameTradeOffer {

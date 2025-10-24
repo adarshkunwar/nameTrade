@@ -10,7 +10,7 @@ const ForSaleTable = () => {
 
   const data = listings.map((listing) => ({
     ...listing,
-    name: listing.tokenId.toString(),
+    name: listing.name || listing.tokenId.toString(),
   }));
 
   const columns = [
