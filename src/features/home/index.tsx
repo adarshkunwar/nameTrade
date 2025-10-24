@@ -4,8 +4,8 @@ import { CONSTANTS } from './constant/data.const'
 import Search from './components/search'
 import AllUsernamesTable from './components/AllUsernamesTable'
 import Page from '@/components/ui/Page'
-import ForSaleTable from './components/ForSaleTable';
-import AuctionsTable from './components/AuctionsTable';
+import ForSaleTable from './components/ForSaleTable'
+import AuctionsTable from './components/AuctionsTable'
 
 const Home = () => {
   return (
@@ -34,7 +34,7 @@ const Home = () => {
                 name: 'For Sale',
                 key: 'for+sale',
                 field: (
-                  <div className="flex justify-center">
+                  <div className="">
                     <ForSaleTable />
                   </div>
                 ),

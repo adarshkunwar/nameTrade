@@ -1,17 +1,17 @@
-import Table from '@/components/ui/Table';
-import Button from '@/components/ui/Button';
-import Shimmer from '@/components/ui/Shimmer';
-import { useGetListedNfts } from '@/hooks/contract/useGetListedNfts';
-import { formatEther } from 'viem';
-import type { NameTradeListing } from '@/types/trade';
+import Table from '@/components/ui/Table'
+import Button from '@/components/ui/Button'
+import Shimmer from '@/components/ui/Shimmer'
+import { useGetListedNfts } from '@/hooks/contract/useGetListedNfts'
+import { formatEther } from 'viem'
+import type { NameTradeListing } from '@/types/trade'
 
 const ForSaleTable = () => {
-  const { listings, isLoading } = useGetListedNfts();
+  const { listings, isLoading } = useGetListedNfts()
 
   const data = listings.map((listing) => ({
     ...listing,
     name: listing.name || listing.tokenId.toString(),
-  }));
+  }))
 
   const columns = [
     {
@@ -19,8 +19,7 @@ const ForSaleTable = () => {
       header: 'Username',
       cell: ({ row }: { row: { original: { name: string } } }) => (
         <div className="flex flex-col gap-1">
-          <div className="font-semibold text-white">@{row.original.name}</div>
-          <div className="text-sm text-secondary">@{row.original.name}</div>
+          <div className="font-semibold text-white">@{row.original.name?.split('.base')?.[0]}</div>
         </div>
       ),
     },
@@ -38,10 +37,12 @@ const ForSaleTable = () => {
       accessorKey: 'action',
       header: '',
       cell: () => (
-        <Button variant="secondary" size="sm">Buy</Button>
+        <Button variant="secondary" size="sm">
+          Buy
+        </Button>
       ),
     },
-  ];
+  ]
 
   if (isLoading) {
     return (
@@ -50,14 +51,14 @@ const ForSaleTable = () => {
           <Shimmer key={i} />
         ))}
       </div>
-    );
+    )
   }
 
   return (
     <div className="rounded-md border border-header ">
       <Table data={data} columns={columns} />
     </div>
-  );
-};
+  )
+}
 
-export default ForSaleTable;
+export default ForSaleTable
