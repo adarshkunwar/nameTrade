@@ -12,6 +12,7 @@ export interface UseNameTradeStartAuctionVariables {
   duration: bigint | number | string
 }
 
+
 export const useNameTradeStartAuction = (
   options: NameTradeWriteHookOptions<UseNameTradeStartAuctionVariables> = {}
 ): UseMutationResult<NameTradeWriteResult, Error, UseNameTradeStartAuctionVariables> => {

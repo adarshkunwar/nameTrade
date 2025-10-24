@@ -6,19 +6,19 @@ import { FormProvider, useForm } from 'react-hook-form'
 import DATA from '../constant/field.const'
 
 type Props = {
-  username: string
-}
+  username: string;
+  onSubmit: (data: { bid: number }) => void;
+  loading: boolean;
+  disabled: boolean;
+};
 
-const PlaceABidModal = ({ username }: Props) => {
+const PlaceABidModal = ({ username, onSubmit, loading, disabled }: Props) => {
   const methods = useForm<{ bid: number }>({
     defaultValues: {
       bid: 0,
     },
   })
 
-  const onSubmit = (data: { bid: number }) => {
-    console.log(data)
-  }
 
   return (
     <Modal
@@ -37,7 +37,7 @@ const PlaceABidModal = ({ username }: Props) => {
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col gap-2">
             <TextField name="bid" placeholder={DATA.BID.PLACEHOLDER} customLabel={DATA.BID.CUSTOM_LABEL} />
-            <Button variant="secondary" type="submit" fullWidth>
+            <Button variant="secondary" type="submit" fullWidth loading={loading} disabled={disabled}>
               {DATA.BID.SUBMIT_BUTTON_TEXT}
             </Button>
           </form>
