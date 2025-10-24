@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import {EnumerableStorage, NftIdentifier} from "./EnumerableStorage.sol";
 
 contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
     using Address for address payable;
@@ -49,12 +50,21 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
         bool settled;
     }
 
+
     // --- State ---
     mapping(address => mapping(uint256 => Listing)) public listings;
     mapping(address => mapping(uint256 => mapping(address => Offer))) public offers;
     mapping(address => mapping(uint256 => Auction)) public auctions;
     mapping(address => mapping(uint256 => mapping(address => bool))) public approvalStatus;
     mapping(address => mapping(uint256 => mapping(address => uint256))) public counterPrice;
+
+    // --- Trackers for Getters ---
+    using EnumerableStorage for EnumerableStorage.NftSet;
+    using EnumerableStorage for EnumerableStorage.OffererSet;
+
+    EnumerableStorage.NftSet private _listedNfts;
+    EnumerableStorage.NftSet private _activeAuctions;
+    mapping(address => mapping(uint256 => EnumerableStorage.OffererSet)) private _offererSets;
 
     // --- Immutables ---
     uint256 public immutable PLATFORM_FEE_BPS;
@@ -153,6 +163,8 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
         );
         approvalStatus[nft][tokenId][msg.sender] = true;
 
+        _listedNfts.add(nft, tokenId);
+
         listings[nft][tokenId] =
             Listing({nft: nft, tokenId: tokenId, seller: msg.sender, price: price, allowedBuyers: new address[](0)});
         emit Listed(nft, tokenId, msg.sender, price);
@@ -171,6 +183,8 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
         );
         approvalStatus[nft][tokenId][msg.sender] = true;
 
+        _listedNfts.add(nft, tokenId);
+
         listings[nft][tokenId] =
             Listing({nft: nft, tokenId: tokenId, seller: msg.sender, price: price, allowedBuyers: allowedBuyers});
         emit Listed(nft, tokenId, msg.sender, price);
@@ -188,6 +202,7 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
     }
 
     function cancelListing(address nft, uint256 tokenId) external onlyTradableNFT(nft) onlyNFTOwner(nft, tokenId) {
+        _listedNfts.remove(nft, tokenId);
         delete listings[nft][tokenId];
         emit ListingCancelled(nft, tokenId, msg.sender);
     }
@@ -208,6 +223,8 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
         require(msg.value > 0, "Offer must be positive");
         Offer storage existing = offers[nft][tokenId][msg.sender];
         require(existing.amount == 0, "Already offered");
+
+        _offererSets[nft][tokenId].add(msg.sender);
 
         offers[nft][tokenId][msg.sender] = Offer({
             nft: nft,
@@ -250,6 +267,8 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
             // Transfer NFT to marketplace escrow
             IERC721(offerNft).safeTransferFrom(msg.sender, address(this), offerTokenId);
         }
+
+        _offererSets[nft][tokenId].add(msg.sender);
 
         offers[nft][tokenId][msg.sender] = Offer({
             nft: nft,
@@ -337,10 +356,12 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
                 require(IERC721(offerNft).ownerOf(offerTokenId) == address(this), "NFT not escrowed");
                 IERC721(offerNft).safeTransferFrom(address(this), offerer, offerTokenId);
             }
+            _offererSets[nft][tokenId].remove(offerer);
             delete offers[nft][tokenId][offerer];
             emit OfferRemoved(nft, tokenId, offerer, OfferType.NFT);
         } else {
             uint256 refund = offer.amount;
+            _offererSets[nft][tokenId].remove(offerer);
             delete offers[nft][tokenId][offerer];
             // Clear counter offer if it exists
             if (counterAmount > 0) {
@@ -380,6 +401,7 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
             IERC721(nft).safeTransferFrom(seller, offerer, tokenId);
 
             delete listings[nft][tokenId];
+            _offererSets[nft][tokenId].remove(offerer);
             delete offers[nft][tokenId][offerer];
             _revokeApproval(nft, tokenId, seller);
 
@@ -394,6 +416,7 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
             require(offer.amount > 0, "Escrow empty");
             uint256 amount = offer.amount;
 
+            _offererSets[nft][tokenId].remove(offerer);
             delete offers[nft][tokenId][offerer];
             delete listings[nft][tokenId];
 
@@ -413,6 +436,7 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
         require(msg.value == wanted, "Send full counter price");
         require(offer.amount == 0, "Escrow must be refunded");
 
+        _offererSets[nft][tokenId].remove(offerer);
         delete offers[nft][tokenId][offerer];
         delete counterPrice[nft][tokenId][offerer];
         delete listings[nft][tokenId];
@@ -438,6 +462,8 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
             "Marketplace not approved"
         );
         approvalStatus[nft][tokenId][msg.sender] = true;
+
+        _activeAuctions.add(nft, tokenId);
 
         auctions[nft][tokenId] = Auction({
             nft: nft,
@@ -503,6 +529,7 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
         address highestBidder = auction.highestBidder;
 
         // Clear auction state
+        _activeAuctions.remove(nft, tokenId);
         delete auctions[nft][tokenId];
 
         // Refund the bidder
@@ -585,6 +612,7 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
         // Check if seller still owns the NFT before proceeding
         require(IERC721(nft).ownerOf(tokenId) == seller, "Seller no longer owns NFT");
 
+        _listedNfts.remove(nft, tokenId);
         delete listings[nft][tokenId];
         _handleRoyaltyAndPayout(nft, tokenId, seller, msg.sender, listing.price);
         IERC721(nft).safeTransferFrom(seller, msg.sender, tokenId);
@@ -599,6 +627,8 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
         require(block.timestamp >= auction.endTime, "Auction not ended");
         require(!auction.settled, "Already settled");
         auction.settled = true;
+
+        _activeAuctions.remove(nft, tokenId);
 
         if (auction.highestBid >= auction.reservePrice && auction.highestBidder != address(0)) {
             // Check if seller still owns the NFT before proceeding
@@ -618,6 +648,18 @@ contract NameTrade is ReentrancyGuard, Ownable, IERC721Receiver {
     }
 
     // --- View Functions ---
+    function getAllListedNfts() external view returns (NftIdentifier[] memory) {
+        return _listedNfts.values();
+    }
+
+    function getAllActiveAuctions() external view returns (NftIdentifier[] memory) {
+        return _activeAuctions.values();
+    }
+
+    function getAllOffersForNft(address nft, uint256 tokenId) external view returns (address[] memory) {
+        return _offererSets[nft][tokenId].values();
+    }
+
     function getListing(address nft, uint256 tokenId)
         external
         view
