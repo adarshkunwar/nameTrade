@@ -46,7 +46,7 @@ export const TextField: FC<TextFieldProps> = ({
       render={({ field, fieldState: { error } }) => (
         <>
           {customLabel ? (
-            <label className="mb-6 block font-bold text-white">
+            <label className="mb-1 block font-bold text-white">
               {customLabel} {required ? <span style={{ color: '#FF1943' }}>*</span> : ''}
             </label>
           ) : null}
