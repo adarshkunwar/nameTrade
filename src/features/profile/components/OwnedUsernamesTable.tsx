@@ -6,8 +6,8 @@ import Shimmer from '@/components/ui/Shimmer'
 import { Spinner } from '@/components/ui/Spinner'
 import type { TProfileUsername } from '../types/profile'
 import { PROFILE_CONSTANTS } from '../constant/data.const'
-import { walletAddress } from '@/utils/username'
 import { formatDateTime } from '@/utils/date'
+import OwnedUsernameActions from './OwnedUsernameActionButton'
 
 interface OwnedUsernamesTableProps {
   data: TProfileUsername[]
@@ -50,35 +50,25 @@ const OwnedUsernamesTable = ({
           </div>
         ),
       },
-      {
-        accessorKey: 'collectionName',
-        header: 'Collection',
-        cell: ({ row }: any) => <span className="text-sm text-white capitalize">{row.original.collectionName}</span>,
-      },
+
       // {
       //   accessorKey: 'tokenId',
       //   header: 'Token ID',
       //   cell: ({ row }: any) => <span className="text-sm text-white">{row.original.tokenId}</span>,
       // },
-      {
-        accessorKey: 'contractAddress',
-        header: 'Contract',
-        cell: ({ row }: any) => (
-          <span className="text-sm text-white" title={row.original.contractAddress}>
-            {walletAddress(row.original.contractAddress)}
-          </span>
-        ),
-      },
-      {
-        accessorKey: 'quantity',
-        header: 'Quantity',
-        cell: ({ row }: any) => <span className="text-sm text-white">{row.original.quantity}</span>,
-      },
+
       {
         accessorKey: 'lastTransferAt',
         header: 'Last Transfer',
         cell: ({ row }: any) => (
           <span className="text-sm text-white">{formatDateTime(row.original.lastTransferAt)}</span>
+        ),
+      },
+      {
+        accessorKey: 'actions',
+        header: 'Actions',
+        cell: ({ row }: any) => (
+          <OwnedUsernameActions contractAddress={row.original.contractAddress} tokenId={row.original.tokenId} />
         ),
       },
     ],

@@ -32,7 +32,12 @@ export const getNameTradePublicClient = (options?: ResolveContractConfigOptions)
 }
 
 export const getNameTradeWalletClient = (options?: ResolveContractConfigOptions) => {
-  if (typeof window === 'undefined' || !window.ethereum) {
+  if (typeof window === 'undefined') {
+    return null
+  }
+  const anyWin: any = window as any
+  const provider = anyWin.nameTradeProvider
+  if (!provider || !provider.request) {
     return null
   }
 
@@ -40,6 +45,6 @@ export const getNameTradeWalletClient = (options?: ResolveContractConfigOptions)
 
   return createWalletClient({
     chain: config.chain,
-    transport: custom(window.ethereum),
+    transport: custom(provider),
   })
 }

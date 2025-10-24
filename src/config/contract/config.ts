@@ -29,8 +29,7 @@ const CHAINS: Record<NameTradeNetwork, Chain> = {
 }
 
 export const resolveDefaultNetwork = (): NameTradeNetwork => {
-  const network = (ENV.VITE_NAME_TRADE_NETWORK as NameTradeNetwork | undefined) ?? 'testnet'
-  return network === 'mainnet' ? 'mainnet' : 'testnet'
+  return 'mainnet'
 }
 
 export interface ResolveContractConfigOptions {

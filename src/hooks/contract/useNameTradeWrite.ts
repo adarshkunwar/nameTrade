@@ -33,7 +33,7 @@ export const useNameTradeWriteMutation = <TVariables>(
     mutationKey: config.mutationKey,
     mutationFn: async (variables) => {
       const args = config.getArgs(variables)
-      const walletClient = getNameTradeWalletClient({
+      let walletClient = getNameTradeWalletClient({
         network: config.network,
         rpcUrlOverride: config.rpcUrlOverride,
       })
@@ -52,9 +52,55 @@ export const useNameTradeWriteMutation = <TVariables>(
         rpcUrlOverride: config.rpcUrlOverride,
       })
 
-      const chainId = await walletClient.getChainId?.()
+      let chainId = await walletClient.getChainId?.()
       if (chainId && chainId !== contractConfig.chain.id) {
-        throw new Error(`Switch your wallet to the ${contractConfig.chain.name} network to continue.`)
+        const targetHex = `0x${contractConfig.chain.id.toString(16)}`
+        const anyWin: any = typeof window !== 'undefined' ? (window as any) : {}
+        const eip1193: any = anyWin.nameTradeProvider || anyWin.ethereum || null
+        if (eip1193?.request) {
+          try {
+            await eip1193.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: targetHex }] })
+          } catch (switchError: any) {
+            if (switchError?.code === 4902) {
+              const addParams: any = {
+                chainId: targetHex,
+                chainName: contractConfig.chain.name,
+                rpcUrls: [contractConfig.rpcUrl],
+                nativeCurrency: contractConfig.chain.nativeCurrency,
+                blockExplorerUrls: contractConfig.chain.blockExplorers?.default?.url
+                  ? [contractConfig.chain.blockExplorers.default.url]
+                  : undefined,
+              }
+              await eip1193.request({ method: 'wallet_addEthereumChain', params: [addParams] })
+              await eip1193.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: targetHex }] })
+            } else {
+              throw new Error(`Switch your wallet to the ${contractConfig.chain.name} network to continue.`)
+            }
+          }
+          for (let i = 0; i < 10; i++) {
+            try {
+              const cidHex = await eip1193.request({ method: 'eth_chainId' })
+              const cidNum = typeof cidHex === 'string' ? parseInt(cidHex, 16) : cidHex
+              if (cidNum === contractConfig.chain.id) break
+            } catch {}
+            await new Promise((r) => setTimeout(r, 250))
+          }
+          
+          
+          
+          
+          
+          // Recreate wallet client after chain switch
+          const switchedClient = getNameTradeWalletClient({
+            network: config.network,
+            rpcUrlOverride: config.rpcUrlOverride,
+          })
+          walletClient = switchedClient ?? walletClient
+          chainId = await walletClient.getChainId?.()
+        }
+        if (chainId !== contractConfig.chain.id) {
+          throw new Error(`Switch your wallet to the ${contractConfig.chain.name} network to continue.`)
+        }
       }
 
       let [account] = await walletClient.getAddresses()
