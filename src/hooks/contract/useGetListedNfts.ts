@@ -1,46 +1,135 @@
-import { useQueries } from '@tanstack/react-query';
-import { useNameTradeRead } from './useNameTradeRead';
-import type { NftIdentifier } from '@/types';
-import { mapListing } from '@/utils/address';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { mapListing, mapOffer } from '@/utils/address';
 import { resolveNameTradeContractConfig, type NameTradeNetwork } from '@/config/contract/config';
 import { getNameTradePublicClient } from '@/config/contract/client';
-import type { NameTradeListing } from '@/types/trade';
+import type { NameTradeListing, NameTradeOffer } from '@/types/trade';
+import type { Address } from 'viem';
 
 export const useGetListedNfts = (options?: { network?: NameTradeNetwork; rpcUrlOverride?: string }) => {
-  const { data: listedNfts, isLoading: isLoadingListedNfts } = useNameTradeRead<NftIdentifier[]>({ 
-    functionName: 'getAllListedNfts',
-    queryKey: ['nameTrade', options?.network, 'getAllListedNfts'],
-    enabled: true,
-    network: options?.network,
-    rpcUrlOverride: options?.rpcUrlOverride,
-  });
+  const config = useMemo(
+    () => resolveNameTradeContractConfig(options),
+    [options?.network, options?.rpcUrlOverride],
+  );
+  const publicClient = useMemo(
+    () => getNameTradePublicClient(options),
+    [options?.network, options?.rpcUrlOverride],
+  );
 
-  const config = resolveNameTradeContractConfig(options);
-  const publicClient = getNameTradePublicClient(options);
+  const {
+    data: listings = [],
+    isLoading,
+  } = useQuery<NameTradeListing[]>({
+    queryKey: ['nameTrade', options?.network, 'getAllListedNftsWithDetails'],
+    staleTime: 30_000,
+    queryFn: async () => {
+      try {
+        const rawNfts = await publicClient.readContract({
+          address: config.address,
+          abi: config.abi,
+          functionName: 'getAllListedNfts',
+        });
+        if (!Array.isArray(rawNfts) || rawNfts.length === 0) {
+          return [];
+        }
 
-  const listingQueries = useQueries({
-    queries:
-      listedNfts?.map((nftId) => {
-        return {
-          queryKey: ['nameTrade', options?.network, 'getListing', nftId.nft, nftId.tokenId.toString()],
-          queryFn: () =>
-            publicClient.readContract({
+        const listedNfts = (rawNfts as unknown[])
+          .map((entry) => {
+            if (!entry) {
+              return null;
+            }
+
+            // viem may return tuples or struct-like objects depending on ABI encoding
+            if (Array.isArray(entry)) {
+              const [nft, tokenId] = entry as [Address, bigint];
+              if (!nft || tokenId === undefined || tokenId === null) {
+                return null;
+              }
+              return { nft, tokenId: BigInt(tokenId) };
+            }
+
+            if (typeof entry === 'object') {
+              const obj = entry as Record<string, unknown>;
+              const nft = (obj.nft ?? obj[0]) as Address | undefined;
+              const tokenIdValue = obj.tokenId ?? obj[1];
+              if (!nft || tokenIdValue === undefined || tokenIdValue === null) {
+                return null;
+              }
+              try {
+                const tokenId = typeof tokenIdValue === 'bigint' ? tokenIdValue : BigInt(tokenIdValue as string | number);
+                return { nft, tokenId };
+              } catch (conversionError) {
+                return null;
+              }
+            }
+
+            return null;
+          })
+          .filter((item): item is { nft: Address; tokenId: bigint } => Boolean(item?.nft && item?.tokenId !== undefined));
+
+        if (listedNfts.length === 0) {
+          return [];
+        }
+        const results: NameTradeListing[] = [];
+
+        for (const { nft, tokenId } of listedNfts) {
+          try {
+            const listingRaw = await publicClient.readContract({
               address: config.address,
               abi: config.abi,
               functionName: 'getListing',
-              args: [nftId.nft, nftId.tokenId],
-            }),
-          select: mapListing,
-          enabled: !!listedNfts && listedNfts.length > 0,
-        };
-      }) ?? [],
-  });
+              args: [nft, tokenId],
+            });
+            const listing = mapListing(listingRaw);
+            if (!listing) {
+              continue;
+            }
 
-  const listings = listingQueries.map((query) => query.data).filter(Boolean) as NameTradeListing[];
-  const isLoadingListings = listingQueries.some((query) => query.isLoading);
+            let offers: NameTradeOffer[] = [];
+            try {
+              const offerers = await publicClient.readContract({
+                address: config.address,
+                abi: config.abi,
+                functionName: 'getAllOffersForNft',
+                args: [nft, tokenId],
+              });
+              const offerList = await Promise.all(
+                (offerers as Address[]).map(async (offerer) => {
+                  try {
+                    const offerRaw = await publicClient.readContract({
+                      address: config.address,
+                      abi: config.abi,
+                      functionName: 'getOffer',
+                      args: [nft, tokenId, offerer],
+                    });
+                    return mapOffer(offerRaw);
+                  } catch (offerErr) {
+                    return null;
+                  }
+                }),
+              );
+
+              offers = offerList.filter(Boolean) as NameTradeOffer[];
+            } catch (offerersErr) {
+              // Silently fail if offers can't be fetched
+            }
+
+            results.push({ ...listing, offers });
+          } catch (listingErr) {
+            // Silently fail if a single listing can't be fetched
+          }
+        }
+
+        return results;
+      } catch (err) {
+        console.error('[useGetListedNfts] A critical error occurred:', err);
+        throw err;
+      }
+    },
+  });
 
   return {
     listings,
-    isLoading: isLoadingListedNfts || isLoadingListings,
+    isLoading,
   };
 };

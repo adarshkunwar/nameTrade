@@ -11,6 +11,7 @@ export interface NameTradeListing {
   seller: Address
   price: bigint
   allowedBuyers: Address[]
+  offers: NameTradeOffer[]
 }
 
 export interface NameTradeOffer {

@@ -28,21 +28,35 @@ export const toBigInt = (value: bigint | number | string): bigint => {
 
 export const mapListing = (raw: any): NameTradeListing | null => {
   if (!raw) {
-    return null
+    return null;
   }
 
-  const nft = raw.nft ?? raw.nftAddr
-  const tokenId = raw.tokenId ?? raw.tokenIdNum
-  const allowedBuyers: (string | Address)[] = raw.allowedBuyers ?? []
+  // Handle both array (tuple) and object (struct) formats
+  const isArray = Array.isArray(raw);
+  const nft = isArray ? raw[0] : raw.nft ?? raw.nftAddr;
+  const tokenId = isArray ? raw[1] : raw.tokenId ?? raw.tokenIdNum;
+  const seller = isArray ? raw[2] : raw.seller;
+  const price = isArray ? raw[3] : raw.price;
+  const allowedBuyers: (string | Address)[] = (isArray ? raw[4] : raw.allowedBuyers) ?? [];
 
-  return {
-    nft: normalizeAddress(nft),
-    tokenId: toBigInt(tokenId),
-    seller: normalizeAddress(raw.seller),
-    price: toBigInt(raw.price),
-    allowedBuyers: allowedBuyers.map((buyer) => normalizeAddress(buyer)),
+  if (!nft || tokenId === undefined || tokenId === null || !seller || price === undefined || price === null) {
+    return null;
   }
-}
+
+  try {
+    return {
+      nft: normalizeAddress(nft),
+      tokenId: toBigInt(tokenId),
+      seller: normalizeAddress(seller),
+      price: toBigInt(price),
+      allowedBuyers: allowedBuyers.map((buyer) => normalizeAddress(buyer)),
+      offers: [], // Default empty offers
+    };
+  } catch (error) {
+    console.error('Failed to map listing:', { raw, error });
+    return null;
+  }
+};
 
 export const mapOffer = (raw: any): NameTradeOffer | null => {
   if (!raw) {

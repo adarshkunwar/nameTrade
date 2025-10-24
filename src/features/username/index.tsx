@@ -3,8 +3,7 @@ import Heading from '@/components/ui/Typography'
 import { ENV } from '@/config/env'
 import { useParams } from 'react-router-dom'
 import HighestBidTable from './components/highestBidTable'
-import { BID_HISTORY_DATA } from './constant/table.const'
-import BidHistory from './components/BidHistory'
+import OfferHistory from './components/OfferHistory'
 import { cryptic } from '@/lib/utils'
 import { useUsername } from './hooks/useUsername'
 import PlaceABidModal from './components/PlaceABidModal'
@@ -22,7 +21,8 @@ const Profile = () => {
 
   const { tokenId: tokenIdParam } = useParams()
   const decryptedTokenId = cryptic().urlSafeDecrypt(tokenIdParam ?? '')
-  const tokenId = decryptedTokenId || null
+    const tokenId = decryptedTokenId || null;
+  const tokenIdBigInt = tokenId ? BigInt(tokenId) : null;
 
   const {
     username: fetchedUsername,
@@ -61,7 +61,7 @@ const Profile = () => {
       const tx = await makeOfferMutation
         .mutateAsync({
           nft: USERNAME_CONTRACT_ADDRESS,
-          tokenId,
+          tokenId: tokenIdBigInt!,
           value: parseEther(String(offer)),
         })
         .catch(async (err) => {
@@ -71,7 +71,7 @@ const Profile = () => {
             await switchToNameTradeChain()
             return await makeOfferMutation.mutateAsync({
               nft: USERNAME_CONTRACT_ADDRESS,
-              tokenId,
+              tokenId: tokenIdBigInt!,
               value: parseEther(String(offer)),
             })
           }
@@ -109,7 +109,7 @@ const Profile = () => {
           </div>
         </div>
         <div>
-          <BidHistory data={BID_HISTORY_DATA} />
+                              {tokenIdBigInt && <OfferHistory nft={USERNAME_CONTRACT_ADDRESS} tokenId={tokenIdBigInt} />}
         </div>
       </div>
     </Page>

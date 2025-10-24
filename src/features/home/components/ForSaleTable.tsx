@@ -8,14 +8,19 @@ import type { NameTradeListing } from '@/types/trade';
 const ForSaleTable = () => {
   const { listings, isLoading } = useGetListedNfts();
 
+  const data = listings.map((listing) => ({
+    ...listing,
+    name: listing.tokenId.toString(),
+  }));
+
   const columns = [
     {
-      accessorKey: 'tokenId',
+      accessorKey: 'name',
       header: 'Username',
-      cell: ({ row }: { row: { original: NameTradeListing } }) => (
+      cell: ({ row }: { row: { original: { name: string } } }) => (
         <div className="flex flex-col gap-1">
-          <div className="font-semibold text-white">@{row.original.tokenId.toString()}</div>
-          <div className="text-sm text-secondary">@{row.original.tokenId.toString()}</div>
+          <div className="font-semibold text-white">@{row.original.name}</div>
+          <div className="text-sm text-secondary">@{row.original.name}</div>
         </div>
       ),
     },
@@ -30,12 +35,12 @@ const ForSaleTable = () => {
       ),
     },
     {
-        accessorKey: 'action',
-        header: '',
-        cell: () => (
-            <Button variant="secondary" size="sm">Buy</Button>
-        ),
-    }
+      accessorKey: 'action',
+      header: '',
+      cell: () => (
+        <Button variant="secondary" size="sm">Buy</Button>
+      ),
+    },
   ];
 
   if (isLoading) {
@@ -50,7 +55,7 @@ const ForSaleTable = () => {
 
   return (
     <div className="rounded-md border border-header ">
-      <Table data={listings} columns={columns} />
+      <Table data={data} columns={columns} />
     </div>
   );
 };
