@@ -31,3 +31,14 @@ export const HIGHEST_BID_DATA = [
     minimumBidApprox: '$50',
   },
 ]
+
+export const HIGHEST_OFFER_DATA = [
+  {
+    highestOffer: '$100',
+    highestOfferApprox: '$100',
+    offerStep: '$10',
+    offerStepApprox: '$10',
+    minimumOffer: '$50',
+    minimumOfferApprox: '$50',
+  },
+]

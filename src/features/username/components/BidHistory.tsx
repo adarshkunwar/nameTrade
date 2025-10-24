@@ -1,4 +1,5 @@
 import Table from '@/components/ui/Table'
+import Heading from '@/components/ui/Typography'
 
 const BidHistory = ({ data }: { data: any[] }) => {
   const columns = [
@@ -32,7 +33,8 @@ const BidHistory = ({ data }: { data: any[] }) => {
   ]
 
   return (
-    <div className="rounded-md border border-header ">
+    <div className="rounded-md border border-header flex flex-col gap-2">
+      <Heading variant="h3" title="Bid History" fontWeight={700} color="white" />
       <Table data={data} columns={columns} />
     </div>
   )
