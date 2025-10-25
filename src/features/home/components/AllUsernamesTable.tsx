@@ -132,6 +132,8 @@ const AllUsernamesTable = () => {
               loading={makeOfferMutation.isPending}
               disabled={makeOfferMutation.isPending}
               triggerLabel="Offer"
+              triggerSize="sm"
+              triggerFullWidth={false}
             />
           )
         },

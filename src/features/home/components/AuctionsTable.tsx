@@ -58,7 +58,7 @@ const AuctionsTable = () => {
   ]
 
   return (
-    <Table data={data} columns={columns} isLoading={isLoading} />
+    <Table data={data} columns={columns} isLoading={isLoading} emptyMessage="No Username found auctioned" />
   )
 }
 

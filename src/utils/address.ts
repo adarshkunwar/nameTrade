@@ -64,22 +64,34 @@ export const mapOffer = (raw: any): NameTradeOffer | null => {
     return null
   }
 
-  const nft = raw.nft ?? raw.nftAddr
-  const tokenId = raw.tokenId ?? raw.tokenIdNum
-  const offerer = raw.offerer ?? raw.offererAddr
+  try {
+    const isArray = Array.isArray(raw)
+    const nft = isArray ? raw[0] : raw.nft ?? raw.nftAddr
+    const tokenId = isArray ? raw[1] : raw.tokenId ?? raw.tokenIdNum
+    const offerer = isArray ? raw[2] : raw.offerer ?? raw.offererAddr
+    const amount = isArray ? raw[3] : raw.amount
+    const expiry = isArray ? raw[4] : raw.expiry
+    const offerType = isArray ? raw[5] : raw.offerType
+    const offerNfts: (string | Address)[] = (isArray ? raw[6] : raw.offerNfts) ?? []
+    const offerTokenIds: (bigint | number | string)[] = (isArray ? raw[7] : raw.offerTokenIds) ?? []
 
-  const offerNfts: (string | Address)[] = raw.offerNfts ?? []
-  const offerTokenIds: (bigint | number | string)[] = raw.offerTokenIds ?? []
+    if (!nft || tokenId === undefined || !offerer) {
+      return null
+    }
 
-  return {
-    nft: normalizeAddress(nft),
-    tokenId: toBigInt(tokenId),
-    offerer: normalizeAddress(offerer),
-    amount: toBigInt(raw.amount ?? 0),
-    expiry: toBigInt(raw.expiry ?? 0),
-    offerType: Number(raw.offerType ?? 0) as NameTradeOfferType,
-    offerNfts: offerNfts.map((addr) => normalizeAddress(addr)),
-    offerTokenIds: offerTokenIds.map((id) => toBigInt(id)),
+    return {
+      nft: normalizeAddress(nft),
+      tokenId: toBigInt(tokenId),
+      offerer: normalizeAddress(offerer),
+      amount: toBigInt(amount ?? 0),
+      expiry: toBigInt(expiry ?? 0),
+      offerType: Number(offerType ?? 0) as NameTradeOfferType,
+      offerNfts: offerNfts.map((addr) => normalizeAddress(addr)),
+      offerTokenIds: offerTokenIds.map((id) => toBigInt(id)),
+    }
+  } catch (error) {
+    console.error('Failed to map offer:', { raw, error })
+    return null
   }
 }
 

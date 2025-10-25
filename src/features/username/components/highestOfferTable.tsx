@@ -1,8 +1,22 @@
 import Table from '@/components/ui/Table'
-import { HIGHEST_OFFER_DATA } from '../constant/table.const'
 import { walletAddress } from '@/utils/username'
+import { useGetOffers } from '@/hooks/contract/useGetOffers'
+import { formatEther } from 'viem'
 
-const HighestOffer = () => {
+type Props = {
+  nft: `0x${string}`
+  tokenId: bigint
+}
+
+const HighestOffer = ({ nft, tokenId }: Props) => {
+  const { offers, isLoading } = useGetOffers(nft, tokenId)
+
+  const highest = offers.length > 0 ? offers.reduce((max, o) => (o.amount > max.amount ? o : max), offers[0]) : null
+
+  const data = highest ? [{ address: highest.offerer, offer: `${formatEther(highest.amount)} ETH` }] : []
+
+  
+
   const columns = [
     {
       accessorKey: 'address',
@@ -26,7 +40,7 @@ const HighestOffer = () => {
 
   return (
     <div className="rounded-md border border-header ">
-      <Table data={HIGHEST_OFFER_DATA} columns={columns} />
+      <Table data={data} columns={columns} isLoading={isLoading} emptyMessage="No offers yet." skeletonRowCount={1} />
     </div>
   )
 }

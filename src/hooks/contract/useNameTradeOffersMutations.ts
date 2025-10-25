@@ -24,10 +24,16 @@ export const useNameTradeMakeNativeOffer = (
     invalidateQueries: ({ variables }) => {
       const nft = normalizeAddress(variables.nft)
       const tokenId = toBigInt(variables.tokenId)
+      const tokenIdStr = tokenId.toString()
       return [
+        ['nameTrade', resolvedNetwork, 'getAllOffersForNft', nft, tokenId.toString()],
         ['nameTrade', resolvedNetwork, 'getOffer', nft, tokenId],
         ['nameTrade', resolvedNetwork, 'offers', nft, tokenId],
         ['nameTrade', resolvedNetwork, 'counterPrice', nft, tokenId],
+        // Also invalidate string-keyed variants used by some read hooks
+        ['nameTrade', resolvedNetwork, 'getOffer', nft, tokenIdStr],
+        ['nameTrade', resolvedNetwork, 'offers', nft, tokenIdStr],
+        ['nameTrade', resolvedNetwork, 'counterPrice', nft, tokenIdStr],
       ]
     },
   })

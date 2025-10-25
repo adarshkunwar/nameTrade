@@ -1,5 +1,6 @@
 import Table from '@/components/ui/Table';
 import { useGetOffers } from '@/hooks/contract/useGetOffers';
+import { walletAddress } from '@/utils/username'
 import { formatEther } from 'viem';
 import type { NameTradeOffer } from '@/types/trade';
 import { formatDistanceToNow } from 'date-fns';
@@ -17,9 +18,7 @@ const OfferHistory: React.FC<OfferHistoryProps> = ({ nft, tokenId }) => {
       accessorKey: 'offerer',
       header: 'Offerer',
       cell: ({ row }: { row: { original: NameTradeOffer } }) => (
-        <div className="font-semibold text-white">
-          {row.original.offerer}
-        </div>
+        <div className="font-semibold text-white">{walletAddress(row.original.offerer)}</div>
       ),
     },
     {

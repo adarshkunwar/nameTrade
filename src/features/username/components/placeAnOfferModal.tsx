@@ -4,6 +4,8 @@ import TextField from '@/components/ui/Text'
 import Heading from '@/components/ui/Typography'
 import { FormProvider, useForm } from 'react-hook-form'
 import DATA from '../constant/field.const'
+import type { ButtonSize } from '@/components/ui/Button'
+import { useState } from 'react'
 // Presentational only: logic handled by parent
 
 type Props = {
@@ -12,24 +14,33 @@ type Props = {
   loading?: boolean
   disabled?: boolean
   triggerLabel?: string
+  triggerSize?: ButtonSize
+  triggerFullWidth?: boolean
 }
 
-const PlaceAnOfferModal = ({ username, onSubmit, loading, disabled, triggerLabel }: Props) => {
+const PlaceAnOfferModal = ({ username, onSubmit, loading, disabled, triggerLabel, triggerSize, triggerFullWidth }: Props) => {
+  const [open, setOpen] = useState(false)
   const methods = useForm<{ offer: number }>({
     defaultValues: {
       offer: 0,
     },
   })
-  const submitHandler = (data: { offer: number }) => {
-    if (typeof onSubmit === 'function') {
-      return onSubmit(data)
-    }
+  const submitHandler = async (data: { offer: number }) => {
+    if (typeof onSubmit !== 'function') return
+    await onSubmit(data)
+    setOpen(false)
+    methods.reset()
   }
 
   return (
     <Modal
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v)
+        if (!v) methods.reset()
+      }}
       trigger={
-        <Button variant="secondary" fullWidth>
+        <Button variant="secondary" size={triggerSize ?? 'md'} fullWidth={triggerFullWidth ?? true}>
           {triggerLabel ?? DATA.OFFER.TRIGGER_BUTTON_TEXT}
         </Button>
       }
