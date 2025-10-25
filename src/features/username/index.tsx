@@ -166,6 +166,7 @@ const Profile = () => {
           throw err;
         });
       await tx.waitForReceipt();
+      console.log('[Offer] success: makeNativeOffer receipt confirmed');
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['nameTrade', network, 'getAllOffersForNft', USERNAME_CONTRACT_ADDRESS, (tokenIdBigInt!).toString()] }),
         queryClient.invalidateQueries({ queryKey: ['nameTrade', network, 'getOffer', USERNAME_CONTRACT_ADDRESS, (tokenIdBigInt!).toString()] }),

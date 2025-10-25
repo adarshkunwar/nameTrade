@@ -174,12 +174,20 @@ export const useNameTradeAcceptOffer = (
       const nft = normalizeAddress(variables.nft)
       const tokenId = toBigInt(variables.tokenId)
       const offerer = normalizeAddress(variables.offerer)
+      const tokenIdStr = tokenId.toString()
       return [
         ['nameTrade', resolvedNetwork, 'getListing', nft, tokenId],
         ['nameTrade', resolvedNetwork, 'listings', nft, tokenId],
         ['nameTrade', resolvedNetwork, 'getOffer', nft, tokenId, offerer],
         ['nameTrade', resolvedNetwork, 'offers', nft, tokenId, offerer],
         ['nameTrade', resolvedNetwork, 'counterPrice', nft, tokenId, offerer],
+        // Offer lists and string-keyed variants
+        ['nameTrade', resolvedNetwork, 'getAllOffersForNft', nft, tokenIdStr],
+        ['nameTrade', resolvedNetwork, 'getOffer', nft, tokenIdStr, offerer],
+        ['nameTrade', resolvedNetwork, 'offers', nft, tokenIdStr, offerer],
+        ['nameTrade', resolvedNetwork, 'counterPrice', nft, tokenIdStr, offerer],
+        // Owner refetch (token transferred on accept)
+        ['nft', 'ownerOf', resolvedNetwork, nft, tokenIdStr],
       ]
     },
   })
