@@ -3,6 +3,7 @@ pragma solidity ^0.8.26;
 
 import {Test, console} from "forge-std/Test.sol";
 import {NameTrade} from "../src/NameTrade.sol";
+import {NftIdentifier} from "../src/EnumerableStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract MockNFT is ERC721 {
@@ -222,5 +223,91 @@ contract NameTradeTest is Test {
 
         assertEq(mockNft.ownerOf(tokenIdToTrade), offerer, "Traded NFT should be transferred to the offerer");
         assertEq(offerNft.ownerOf(tokenIdOffered), seller, "Offered NFT should be transferred to the seller");
+    }
+
+    function test_GetAllListedNfts() public {
+        uint256 tokenId1 = 1;
+        uint256 tokenId2 = 2;
+        mockNft.mint(seller, tokenId2);
+
+        // Seller lists two NFTs
+        vm.startPrank(seller);
+        mockNft.approve(address(nameTrade), tokenId1);
+        nameTrade.list(address(mockNft), tokenId1, LISTING_PRICE);
+        mockNft.approve(address(nameTrade), tokenId2);
+        nameTrade.list(address(mockNft), tokenId2, LISTING_PRICE);
+        vm.stopPrank();
+
+        NftIdentifier[] memory listedNfts = nameTrade.getAllListedNfts();
+        assertEq(listedNfts.length, 2, "Should have 2 listed NFTs");
+        assertEq(listedNfts[0].nft, address(mockNft));
+        assertEq(listedNfts[0].tokenId, tokenId1);
+        assertEq(listedNfts[1].nft, address(mockNft));
+        assertEq(listedNfts[1].tokenId, tokenId2);
+
+        // Cancel one listing
+        vm.startPrank(seller);
+        nameTrade.cancelListing(address(mockNft), tokenId1);
+        vm.stopPrank();
+
+        listedNfts = nameTrade.getAllListedNfts();
+        assertEq(listedNfts.length, 1, "Should have 1 listed NFT after cancellation");
+        assertEq(listedNfts[0].tokenId, tokenId2, "The remaining NFT should be tokenId 2");
+    }
+
+    function test_GetAllActiveAuctions() public {
+        uint256 tokenId1 = 1;
+        uint256 tokenId2 = 2;
+        mockNft.mint(seller, tokenId2);
+
+        // Seller starts two auctions
+        vm.startPrank(seller);
+        mockNft.approve(address(nameTrade), tokenId1);
+        nameTrade.startAuction(address(mockNft), tokenId1, 0.5 ether, 1 hours);
+        mockNft.approve(address(nameTrade), tokenId2);
+        nameTrade.startAuction(address(mockNft), tokenId2, 0.5 ether, 1 hours);
+        vm.stopPrank();
+
+        NftIdentifier[] memory activeAuctions = nameTrade.getAllActiveAuctions();
+        assertEq(activeAuctions.length, 2, "Should have 2 active auctions");
+        assertEq(activeAuctions[0].tokenId, tokenId1);
+        assertEq(activeAuctions[1].tokenId, tokenId2);
+
+        // End one auction
+        vm.warp(block.timestamp + 2 hours); // Fast forward time
+        nameTrade.endAuction(address(mockNft), tokenId1);
+
+        activeAuctions = nameTrade.getAllActiveAuctions();
+        assertEq(activeAuctions.length, 1, "Should have 1 active auction after one ends");
+        assertEq(activeAuctions[0].tokenId, tokenId2, "The remaining auction should be for tokenId 2");
+    }
+
+    function test_GetAllOffersForNft() public {
+        uint256 tokenId = 1;
+        address payable offerer2 = payable(makeAddr("offerer2"));
+        vm.deal(offerer2, 100 ether);
+
+        // Two users make offers on the same NFT
+        vm.startPrank(offerer);
+        nameTrade.makeNativeOffer{value: 0.1 ether}(address(mockNft), tokenId);
+        vm.stopPrank();
+
+        vm.startPrank(offerer2);
+        nameTrade.makeNativeOffer{value: 0.2 ether}(address(mockNft), tokenId);
+        vm.stopPrank();
+
+        address[] memory offerers = nameTrade.getAllOffersForNft(address(mockNft), tokenId);
+        assertEq(offerers.length, 2, "Should have 2 offerers");
+        assertEq(offerers[0], offerer);
+        assertEq(offerers[1], offerer2);
+
+        // One offerer removes their offer
+        vm.startPrank(offerer);
+        nameTrade.removeOffer(address(mockNft), tokenId, offerer);
+        vm.stopPrank();
+
+        offerers = nameTrade.getAllOffersForNft(address(mockNft), tokenId);
+        assertEq(offerers.length, 1, "Should have 1 offerer after one removes their offer");
+        assertEq(offerers[0], offerer2, "The remaining offerer should be offerer2");
     }
 }

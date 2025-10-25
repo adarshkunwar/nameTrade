@@ -10,7 +10,7 @@ interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'si
   customLabel?: string
   placeholder?: string
   size?: 'small' | 'medium'
-  type?: 'text' | 'email' | 'password' | 'search'
+  type?: 'text' | 'email' | 'password' | 'search' | 'number'
   isLoading?: boolean
 }
 
@@ -54,8 +54,19 @@ export const TextField: FC<TextFieldProps> = ({
             <Icon />
             <input
               {...field}
+              type={type}
               className={`${size === 'small' ? 'text-sm' : 'text-base'}  text-white w-full outline-none `}
               title={field?.value}
+              value={field?.value ?? ''}
+              onChange={(e) =>
+                field.onChange(
+                  type === 'number'
+                    ? (e.target as HTMLInputElement).value === ''
+                      ? ''
+                      : Number((e.target as HTMLInputElement).value)
+                    : (e.target as HTMLInputElement).value
+                )
+              }
               {...rest}
               placeholder={placeholder}
             />

@@ -4,27 +4,44 @@ import TextField from '@/components/ui/Text'
 import Heading from '@/components/ui/Typography'
 import { FormProvider, useForm } from 'react-hook-form'
 import DATA from '../constant/field.const'
+import type { ButtonSize } from '@/components/ui/Button'
+import { useState } from 'react'
+// Presentational only: logic handled by parent
 
 type Props = {
   username: string
+  onSubmit: (data: { offer: number }) => Promise<void> | void
+  loading?: boolean
+  disabled?: boolean
+  triggerLabel?: string
+  triggerSize?: ButtonSize
+  triggerFullWidth?: boolean
 }
 
-const PlaceAnOfferModal = ({ username }: Props) => {
+const PlaceAnOfferModal = ({ username, onSubmit, loading, disabled, triggerLabel, triggerSize, triggerFullWidth }: Props) => {
+  const [open, setOpen] = useState(false)
   const methods = useForm<{ offer: number }>({
     defaultValues: {
       offer: 0,
     },
   })
-
-  const onSubmit = (data: { offer: number }) => {
-    console.log(data)
+  const submitHandler = async (data: { offer: number }) => {
+    if (typeof onSubmit !== 'function') return
+    await onSubmit(data)
+    setOpen(false)
+    methods.reset()
   }
 
   return (
     <Modal
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v)
+        if (!v) methods.reset()
+      }}
       trigger={
-        <Button variant="secondary" fullWidth>
-          {DATA.OFFER.TRIGGER_BUTTON_TEXT}
+        <Button variant="secondary" size={triggerSize ?? 'md'} fullWidth={triggerFullWidth ?? true}>
+          {triggerLabel ?? DATA.OFFER.TRIGGER_BUTTON_TEXT}
         </Button>
       }
     >
@@ -35,9 +52,15 @@ const PlaceAnOfferModal = ({ username }: Props) => {
         </div>
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col gap-2">
-            <TextField name="bid" placeholder={DATA.OFFER.PLACEHOLDER} customLabel={DATA.OFFER.CUSTOM_LABEL} />
-            <Button variant="secondary" type="submit" fullWidth>
+          <form onSubmit={methods.handleSubmit(submitHandler)} className="flex flex-col gap-2">
+            <TextField name="offer" placeholder={DATA.OFFER.PLACEHOLDER} customLabel={DATA.OFFER.CUSTOM_LABEL} />
+            <Button
+              variant="secondary"
+              type="submit"
+              fullWidth
+              loading={Boolean(loading)}
+              disabled={Boolean(loading || disabled)}
+            >
               {DATA.OFFER.SUBMIT_BUTTON_TEXT}
             </Button>
           </form>

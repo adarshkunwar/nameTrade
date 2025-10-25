@@ -1,35 +1,56 @@
-import { HIGHEST_BID_DATA } from '../constant/table.const'
 import Table from '@/components/ui/Table'
 
-const HighestBid = () => {
+interface HighestBidTableProps {
+  highestBid: string;
+  highestBidUsd: string;
+  bidStep: string;
+  bidStepUsd: string;
+  minimumBid: string;
+  minimumBidUsd: string;
+  isLoading: boolean;
+  isEmpty?: boolean;
+  emptyMessage?: string;
+}
+
+const HighestBid = ({
+  highestBid,
+  highestBidUsd,
+  bidStep,
+  bidStepUsd,
+  minimumBid,
+  minimumBidUsd,
+  isLoading,
+  isEmpty,
+  emptyMessage,
+}: HighestBidTableProps) => {
   const columns = [
     {
       accessorKey: 'highestBid',
       header: 'Highest Bid',
-      cell: ({ row }: any) => (
+      cell: () => (
         <div className="flex flex-col gap-1">
-          <div className="font-semibold text-white">{row.original.highestBid}</div>
-          <div className="text-sm text-secondary">~ {row.original.bidApprox}</div>
+          <div className="font-semibold text-white">{highestBid} ETH</div>
+          <div className="text-sm text-secondary">{highestBidUsd}</div>
         </div>
       ),
     },
     {
       accessorKey: 'bidStep',
       header: 'Bid Step',
-      cell: ({ row }: any) => (
+      cell: () => (
         <div className="flex flex-col gap-1">
-          <div className="font-semibold text-white">{row.original.bidStep}</div>
-          <div className="text-sm text-gray">~ {row.original.bidStepApprox}</div>
+          <div className="font-semibold text-white">{bidStep} ETH</div>
+          <div className="text-sm text-secondary">{bidStepUsd}</div>
         </div>
       ),
     },
     {
       accessorKey: 'minimumBid',
       header: 'Minimum Bid',
-      cell: ({ row }: any) => (
+      cell: () => (
         <div className="flex flex-col gap-0">
-          <div className="font-semibold text-white">{row.original.minimumBid}</div>
-          <div className="text-sm text-gray">~ {row.original.minimumBidApprox}</div>
+          <div className="font-semibold text-white">{minimumBid} ETH</div>
+          <div className="text-sm text-secondary">{minimumBidUsd}</div>
         </div>
       ),
     },
@@ -37,7 +58,13 @@ const HighestBid = () => {
 
   return (
     <div className="rounded-md border border-header ">
-      <Table data={HIGHEST_BID_DATA} columns={columns} />
+      <Table
+        data={isEmpty ? [] : [{}]}
+        columns={columns}
+        emptyMessage={emptyMessage}
+        isLoading={isLoading}
+        skeletonRowCount={1}
+      />
     </div>
   )
 }

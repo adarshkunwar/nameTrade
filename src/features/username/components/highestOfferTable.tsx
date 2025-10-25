@@ -1,35 +1,38 @@
 import Table from '@/components/ui/Table'
-import { HIGHEST_OFFER_DATA } from '../constant/table.const'
+import { walletAddress } from '@/utils/username'
+import { useGetOffers } from '@/hooks/contract/useGetOffers'
+import { formatEther } from 'viem'
 
-const HighestOffer = () => {
+type Props = {
+  nft: `0x${string}`
+  tokenId: bigint
+}
+
+const HighestOffer = ({ nft, tokenId }: Props) => {
+  const { offers, isLoading } = useGetOffers(nft, tokenId)
+
+  const highest = offers.length > 0 ? offers.reduce((max, o) => (o.amount > max.amount ? o : max), offers[0]) : null
+
+  const data = highest ? [{ address: highest.offerer, offer: `${formatEther(highest.amount)} ETH` }] : []
+
+  
+
   const columns = [
     {
-      accessorKey: 'highestOffer',
-      header: 'Highest Offer',
+      accessorKey: 'address',
+      header: 'Address',
       cell: ({ row }: any) => (
         <div className="flex flex-col gap-1">
-          <div className="font-semibold text-white">{row.original.highestOffer}</div>
-          <div className="text-sm text-secondary">~ {row.original.offerApprox}</div>
+          <div className="font-semibold text-white">{walletAddress(row.original.address)}</div>
         </div>
       ),
     },
     {
-      accessorKey: 'offerStep',
-      header: 'Offer Step',
-      cell: ({ row }: any) => (
-        <div className="flex flex-col gap-1">
-          <div className="font-semibold text-white">{row.original.offerStep}</div>
-          <div className="text-sm text-gray">~ {row.original.offerStepApprox}</div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'minimumOffer',
-      header: 'Minimum Offer',
+      accessorKey: 'offer',
+      header: 'Offer',
       cell: ({ row }: any) => (
         <div className="flex flex-col gap-0">
-          <div className="font-semibold text-white">{row.original.minimumOffer}</div>
-          <div className="text-sm text-gray">~ {row.original.minimumOfferApprox}</div>
+          <div className="font-semibold text-white">{row.original.offer}</div>
         </div>
       ),
     },
@@ -37,7 +40,7 @@ const HighestOffer = () => {
 
   return (
     <div className="rounded-md border border-header ">
-      <Table data={HIGHEST_OFFER_DATA} columns={columns} />
+      <Table data={data} columns={columns} isLoading={isLoading} emptyMessage="No offers yet." skeletonRowCount={1} />
     </div>
   )
 }

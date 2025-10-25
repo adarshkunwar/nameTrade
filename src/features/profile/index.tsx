@@ -1,14 +1,26 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import Page from '@/components/ui/Page'
 import Heading from '@/components/ui/Typography'
 import { cryptic } from '@/lib/utils'
 import OwnedUsernamesTable from './components/OwnedUsernamesTable'
+import { useGetListedNfts } from '@/hooks/contract/useGetListedNfts';
+import { useGetActiveAuctions } from '@/hooks/contract/useGetActiveAuctions';
 import { useProfileItems } from './hooks/useProfileItems'
 import { walletAddress } from '@/utils/username'
 
 const Profile = () => {
   const { walletAddress: walletAddressParam } = useParams()
+  const { listings: listedNfts } = useGetListedNfts();
+  const { auctions: activeAuctions } = useGetActiveAuctions();
+
+  const listedTokenIds = useMemo(() => {
+    return new Set(listedNfts.map((item) => item.tokenId.toString()));
+  }, [listedNfts]);
+
+  const auctionedTokenIds = useMemo(() => {
+    return new Set(activeAuctions.map((item) => item.tokenId.toString()));
+  }, [activeAuctions]);
 
   const normalizedAddress = useMemo(() => {
     const raw = walletAddressParam ?? null
@@ -20,22 +32,13 @@ const Profile = () => {
     }
   }, [walletAddressParam])
 
-  const { rows, isLoading, isRefetching, error, refetch, hasMore, fetchNextPage, isFetchingNextPage } = useProfileItems(
+  const { rows, isLoading, isRefetching, error, refetch } = useProfileItems(
     {
       address: normalizedAddress,
-      limit: 50,
-      sortBy: 'RECEIVED_DATE',
-      sortDirection: 'DESC',
     }
   )
 
   const errorMessage = error instanceof Error ? error.message : error ? 'Unknown error' : null
-
-  const handleLoadMore = useCallback(() => {
-    if (hasMore) {
-      void fetchNextPage()
-    }
-  }, [hasMore, fetchNextPage])
 
   const displayAddress = normalizedAddress ? walletAddress(normalizedAddress) : null
   const headingTitle = normalizedAddress ? `Profile of ${displayAddress}` : 'Profile'
@@ -45,9 +48,7 @@ const Profile = () => {
       <div className="flex flex-col gap-6 mt-5">
         <div className="flex flex-col gap-1">
           <Heading variant="h2" title={headingTitle} color="white" fontWeight={700} />
-          {normalizedAddress ? (
-            <span className="text-sm text-gray-300 break-all uppercase tracking-wide">{normalizedAddress}</span>
-          ) : null}
+          
         </div>
 
         {!normalizedAddress ? (
@@ -56,14 +57,13 @@ const Profile = () => {
           </div>
         ) : (
           <OwnedUsernamesTable
-            data={rows}
+            data={rows || []}
             isLoading={isLoading}
             isRefetching={isRefetching}
             error={errorMessage}
             onRetry={refetch}
-            onLoadMore={hasMore ? handleLoadMore : undefined}
-            canLoadMore={hasMore}
-            isFetchingNextPage={isFetchingNextPage}
+            listedTokenIds={listedTokenIds}
+            auctionedTokenIds={auctionedTokenIds}
           />
         )}
       </div>

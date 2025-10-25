@@ -6,7 +6,7 @@ const FRONTEND_CONSTANTS_DIR = path.resolve(process.cwd(), '../src/constants');
 const ABI_FILE_PATH = path.resolve(FRONTEND_CONSTANTS_DIR, 'abi.json');
 const INDEX_FILE_PATH = path.resolve(FRONTEND_CONSTANTS_DIR, 'index.ts');
 
-const SEPOLIA_CONTRACT_ADDRESS = '0xAE6A65Ed6F8dFD2EC07398a2358cc2144949658b';
+const SEPOLIA_CONTRACT_ADDRESS = '0x2A6f460129DBAeB66Fda5FcbD5b3b0CCf7791Bfd';
 
 async function main() {
     try {

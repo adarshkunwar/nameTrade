@@ -4,15 +4,23 @@ import { FiArrowDown, FiArrowUp } from 'react-icons/fi'
 import Table from '@/components/ui/Table'
 import { CONSTANTS } from '../constant/data.const'
 import Heading from '@/components/ui/Typography'
-import { walletAddress, ellipsiAtEnd } from '@/utils/username'
+import {  ellipsiAtEnd } from '@/utils/username'
 import { formatRelativeTime } from '@/utils/date'
 import { cryptic } from '@/lib/utils'
 import { useCollectionItems } from '../hooks/useCollection'
+import PlaceAnOfferModal from '@/features/username/components/placeAnOfferModal'
+import { useNameTradeMakeNativeOffer } from '@/hooks/contract/useNameTradeOffersMutations'
+import { useBaseAuth } from '@/hooks/auth/useBaseAuth'
+import { parseEther } from 'viem'
+import { USERNAME_CONTRACT_ADDRESS } from '@/features/username/constant/config.const'
 
 const AllUsernamesTable = () => {
   const [mintSortDirection, setMintSortDirection] = useState<'ASC' | 'DESC'>('DESC')
 
   const { urlSafeEncrypt } = cryptic()
+
+  const makeOfferMutation = useNameTradeMakeNativeOffer()
+  const { switchToNameTradeChain } = useBaseAuth()
 
   const handleToggleMintSort = useCallback(() => {
     setMintSortDirection((prev) => (prev === 'DESC' ? 'ASC' : 'DESC'))
@@ -65,30 +73,13 @@ const AllUsernamesTable = () => {
         },
       },
       {
-        accessorKey: 'ownerAddress',
-        header: 'Owner',
-        size: 200,
-        cell: ({ row }: any) =>
-          row.original?.ownerAddress && row.original?.ownerAddress !== '—' ? (
-            <Link
-              to={`/profile/${urlSafeEncrypt(row.original?.ownerAddress ?? '')}`}
-              className="font-semibold text-white transition-colors "
-              title={row.original?.ownerAddress}
-            >
-              {walletAddress(row.original?.ownerAddress)}
-            </Link>
-          ) : (
-            <div className="font-semibold text-white">{walletAddress(row.original?.ownerAddress)}</div>
-          ),
-      },
-      {
         accessorKey: 'createdAt',
         size: 100,
         header: () => (
           <button
             type="button"
             onClick={handleToggleMintSort}
-            className="flex items-center gap-2 text-sm font-semibold text-white transition hover:text-primary"
+            className="flex text-nowrap items-center gap-2 text-sm font-semibold text-white transition"
           >
             Minted At
             {mintSortDirection === 'DESC' ? <FiArrowDown /> : <FiArrowUp />}
@@ -98,8 +89,57 @@ const AllUsernamesTable = () => {
           <span className="text-sm text-white">{formatRelativeTime(row.original?.createdAt ?? '')}</span>
         ),
       },
+      {
+        accessorKey: 'action',
+        size: 100,
+        header: "",
+        cell: ({ row }: any) => {
+          const usernameValue = row.original?.username
+          const display = `@${usernameValue?.split('.base')?.[0]}`
+          const tokenIdStr = String(row.original?.tokenId ?? '')
+          const onSubmit = async (data: { offer: number }) => {
+            const { offer } = data
+            if (!tokenIdStr) return
+            if (!offer || Number(offer) <= 0) return
+            try {
+              await switchToNameTradeChain()
+              const tx = await makeOfferMutation
+                .mutateAsync({
+                  nft: USERNAME_CONTRACT_ADDRESS,
+                  tokenId: BigInt(tokenIdStr),
+                  value: parseEther(String(offer)),
+                })
+                .catch(async (err) => {
+                  const msg = err instanceof Error ? err.message : String(err)
+                  const needsSwitch = /switch your wallet|wallet_switchethereumchain|chain/i.test(msg)
+                  if (needsSwitch) {
+                    await switchToNameTradeChain()
+                    return await makeOfferMutation.mutateAsync({
+                      nft: USERNAME_CONTRACT_ADDRESS,
+                      tokenId: BigInt(tokenIdStr),
+                      value: parseEther(String(offer)),
+                    })
+                  }
+                  throw err
+                })
+              await tx.waitForReceipt()
+            } catch (_) {}
+          }
+          return (
+            <PlaceAnOfferModal
+              username={display}
+              onSubmit={onSubmit}
+              loading={makeOfferMutation.isPending}
+              disabled={makeOfferMutation.isPending}
+              triggerLabel="Offer"
+              triggerSize="sm"
+              triggerFullWidth={false}
+            />
+          )
+        },
+      },
     ],
-    [handleToggleMintSort, mintSortDirection]
+    [handleToggleMintSort, mintSortDirection, makeOfferMutation.isPending, switchToNameTradeChain]
   )
 
   useEffect(() => {

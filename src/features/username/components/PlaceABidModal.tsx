@@ -4,24 +4,37 @@ import TextField from '@/components/ui/Text'
 import Heading from '@/components/ui/Typography'
 import { FormProvider, useForm } from 'react-hook-form'
 import DATA from '../constant/field.const'
+import { useState } from 'react'
 
 type Props = {
-  username: string
-}
+  username: string;
+  onSubmit: (data: { bid: number }) => Promise<void> | void;
+  loading: boolean;
+  disabled: boolean;
+};
 
-const PlaceABidModal = ({ username }: Props) => {
+const PlaceABidModal = ({ username, onSubmit, loading, disabled }: Props) => {
+  const [open, setOpen] = useState(false)
   const methods = useForm<{ bid: number }>({
     defaultValues: {
       bid: 0,
     },
   })
-
-  const onSubmit = (data: { bid: number }) => {
-    console.log(data)
+  const submitHandler = async (data: { bid: number }) => {
+    if (typeof onSubmit !== 'function') return
+    await onSubmit(data)
+    setOpen(false)
+    methods.reset()
   }
+
 
   return (
     <Modal
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v)
+        if (!v) methods.reset()
+      }}
       trigger={
         <Button variant="secondary" fullWidth>
           {DATA.BID.TRIGGER_BUTTON_TEXT}
@@ -35,9 +48,9 @@ const PlaceABidModal = ({ username }: Props) => {
         </div>
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col gap-2">
+          <form onSubmit={methods.handleSubmit(submitHandler)} className="flex flex-col gap-2">
             <TextField name="bid" placeholder={DATA.BID.PLACEHOLDER} customLabel={DATA.BID.CUSTOM_LABEL} />
-            <Button variant="secondary" type="submit" fullWidth>
+            <Button variant="secondary" type="submit" fullWidth loading={loading} disabled={disabled}>
               {DATA.BID.SUBMIT_BUTTON_TEXT}
             </Button>
           </form>
