@@ -1,38 +1,23 @@
 import axios from 'axios'
-import { PROFILE_ITEMS_ENDPOINT, PROFILE_ITEMS_LIST_QUERY } from '../constant/query.const'
-import type { ProfileItemsListResponse, ProfileItemsListVariables } from '../types/query'
+import type { TBaseUsernamesResponse } from '../types/basenames'
+
+const BASENAMES_API_ENDPOINT = '/api/basenames/getUsernames'
 
 export const PROFILE_ITEMS_API = {
-  fetchProfileItems: async (
-    variables: ProfileItemsListVariables
-  ): Promise<ProfileItemsListResponse['profileItems']> => {
+  fetchProfileItems: async (address: string): Promise<TBaseUsernamesResponse> => {
     try {
-      const response = await axios.post(
-        PROFILE_ITEMS_ENDPOINT,
-        {
-          query: PROFILE_ITEMS_LIST_QUERY,
-          variables,
+      const response = await axios.get(BASENAMES_API_ENDPOINT, {
+        params: {
+          address,
+          network: 'base-mainnet',
         },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-        }
-      )
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+      })
 
-      const payload: { data?: ProfileItemsListResponse; errors?: { message?: string }[] } = response.data
-
-      if (payload.errors?.length) {
-        const [firstError] = payload.errors
-        throw new Error(firstError?.message ?? 'Unknown GraphQL error')
-      }
-
-      if (!payload.data?.profileItems) {
-        throw new Error('Malformed response from profile items query')
-      }
-
-      return payload.data.profileItems
+      return response.data
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const errorText = error.response?.data || error.message

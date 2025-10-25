@@ -1,23 +1,20 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom'
 import Table from '@/components/ui/Table'
 import Heading from '@/components/ui/Typography'
 import Shimmer from '@/components/ui/Shimmer'
 import { Spinner } from '@/components/ui/Spinner'
-import type { TProfileUsername } from '../types/profile'
+import type { TBaseUsername } from '../types/basenames'
 import { PROFILE_CONSTANTS } from '../constant/data.const'
 import { formatDateTime } from '@/utils/date'
 import OwnedUsernameActions from './OwnedUsernameActionButton'
 
 interface OwnedUsernamesTableProps {
-  data: TProfileUsername[];
+  data: TBaseUsername[];
   isLoading: boolean;
   isRefetching: boolean;
   error: string | null;
   onRetry: () => void | Promise<unknown>;
-  onLoadMore?: () => void;
-  canLoadMore?: boolean;
-  isFetchingNextPage?: boolean;
   listedTokenIds: Set<string>;
   auctionedTokenIds: Set<string>;
 }
@@ -28,57 +25,45 @@ const OwnedUsernamesTable = ({
   isRefetching,
   error,
   onRetry,
-  onLoadMore,
-  canLoadMore = false,
-  isFetchingNextPage = false,
   listedTokenIds,
   auctionedTokenIds,
 }: OwnedUsernamesTableProps) => {
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
-
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'username',
+        accessorKey: 'domain',
         header: 'Username',
         cell: ({ row }: any) => (
           <div className="flex flex-col gap-1">
             <Link
-              to={`/username/${row.original.tokenId}`}
-              state={{ username: row.original.username }}
+              to={`/username/${row.original.token_id}`}
+              state={{ username: row.original.domain }}
               className="font-semibold text-white transition hover:text-primary"
             >
-              @{row.original.username.split('.base')[0]}
+              @{row.original.domain.split('.base')[0]}
             </Link>
-            <span className="text-xs text-gray-400">{row.original.username}</span>
+            <span className="text-xs text-gray-400">{row.original.domain}</span>
           </div>
         ),
       },
-
-      // {
-      //   accessorKey: 'tokenId',
-      //   header: 'Token ID',
-      //   cell: ({ row }: any) => <span className="text-sm text-white">{row.original.tokenId}</span>,
-      // },
-
       {
-        accessorKey: 'lastTransferAt',
-        header: 'Last Transfer',
+        accessorKey: 'expires_at',
+        header: 'Expires At',
         cell: ({ row }: any) => (
-          <span className="text-sm text-white">{formatDateTime(row.original.lastTransferAt)}</span>
+          <span className="text-sm text-white">{formatDateTime(row.original.expires_at)}</span>
         ),
       },
       {
         accessorKey: 'actions',
         header: 'Actions',
         cell: ({ row }: any) => {
-          const ownedTokenId = row.original.tokenId.toString();
+          const ownedTokenId = row.original.token_id.toString();
           const isListed = listedTokenIds.has(ownedTokenId);
           const isAuctioned = auctionedTokenIds.has(ownedTokenId);
           return (
             <OwnedUsernameActions
-              contractAddress={row.original.contractAddress}
-              tokenId={row.original.tokenId}
+              contractAddress={PROFILE_CONSTANTS.BASENAMES_CONTRACT_ADDRESS}
+              tokenId={row.original.token_id}
               isListed={isListed}
               isAuctioned={isAuctioned}
             />
@@ -91,29 +76,6 @@ const OwnedUsernamesTable = ({
 
   const showSkeleton = isLoading && data.length === 0
   const showEmpty = !isLoading && !error && data.length === 0
-
-  useEffect(() => {
-    if (!onLoadMore || !canLoadMore || isFetchingNextPage) return
-
-    const target = loadMoreRef.current
-    if (!target) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          observer.disconnect()
-          void onLoadMore()
-        }
-      },
-      { root: null, rootMargin: '0px', threshold: 0.1 }
-    )
-
-    observer.observe(target)
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [onLoadMore, canLoadMore, isFetchingNextPage])
 
   return (
     <div className="rounded-md border border-header">
@@ -149,14 +111,6 @@ const OwnedUsernamesTable = ({
       )}
 
       {showEmpty && !error && <div className="p-4 text-sm text-gray-300">{PROFILE_CONSTANTS.TABLE.EMPTY}</div>}
-
-      {onLoadMore && canLoadMore && <div ref={loadMoreRef} className="h-1" />}
-
-      {isFetchingNextPage && (
-        <div className="flex justify-center py-6">
-          <Spinner />
-        </div>
-      )}
     </div>
   )
 }

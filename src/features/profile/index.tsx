@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import Page from '@/components/ui/Page'
 import Heading from '@/components/ui/Typography'
@@ -32,22 +32,13 @@ const Profile = () => {
     }
   }, [walletAddressParam])
 
-  const { rows, isLoading, isRefetching, error, refetch, hasNextPage, fetchNextPage, isFetchingNextPage } = useProfileItems(
+  const { rows, isLoading, isRefetching, error, refetch } = useProfileItems(
     {
       address: normalizedAddress,
-      limit: 50,
-      sortBy: 'RECEIVED_DATE',
-      sortDirection: 'DESC',
     }
   )
 
   const errorMessage = error instanceof Error ? error.message : error ? 'Unknown error' : null
-
-  const handleLoadMore = useCallback(() => {
-    if (hasNextPage) {
-      void fetchNextPage()
-    }
-  }, [hasNextPage, fetchNextPage])
 
   const displayAddress = normalizedAddress ? walletAddress(normalizedAddress) : null
   const headingTitle = normalizedAddress ? `Profile of ${displayAddress}` : 'Profile'
@@ -68,14 +59,11 @@ const Profile = () => {
           </div>
         ) : (
           <OwnedUsernamesTable
-            data={rows}
+            data={rows || []}
             isLoading={isLoading}
             isRefetching={isRefetching}
             error={errorMessage}
             onRetry={refetch}
-            onLoadMore={handleLoadMore}
-            canLoadMore={hasNextPage}
-            isFetchingNextPage={isFetchingNextPage}
             listedTokenIds={listedTokenIds}
             auctionedTokenIds={auctionedTokenIds}
           />
