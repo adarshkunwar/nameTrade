@@ -11,9 +11,10 @@ type Props = {
   onSubmit: (data: { offer: number }) => Promise<void> | void
   loading?: boolean
   disabled?: boolean
+  triggerLabel?: string
 }
 
-const PlaceAnOfferModal = ({ username, onSubmit, loading, disabled }: Props) => {
+const PlaceAnOfferModal = ({ username, onSubmit, loading, disabled, triggerLabel }: Props) => {
   const methods = useForm<{ offer: number }>({
     defaultValues: {
       offer: 0,
@@ -29,7 +30,7 @@ const PlaceAnOfferModal = ({ username, onSubmit, loading, disabled }: Props) => 
     <Modal
       trigger={
         <Button variant="secondary" fullWidth>
-          {DATA.OFFER.TRIGGER_BUTTON_TEXT}
+          {triggerLabel ?? DATA.OFFER.TRIGGER_BUTTON_TEXT}
         </Button>
       }
     >

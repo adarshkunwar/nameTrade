@@ -1,4 +1,3 @@
-import Shimmer from '@/components/ui/Shimmer';
 import Table from '@/components/ui/Table'
 
 interface HighestBidTableProps {
@@ -9,6 +8,8 @@ interface HighestBidTableProps {
   minimumBid: string;
   minimumBidUsd: string;
   isLoading: boolean;
+  isEmpty?: boolean;
+  emptyMessage?: string;
 }
 
 const HighestBid = ({
@@ -19,6 +20,8 @@ const HighestBid = ({
   minimumBid,
   minimumBidUsd,
   isLoading,
+  isEmpty,
+  emptyMessage,
 }: HighestBidTableProps) => {
   const columns = [
     {
@@ -53,17 +56,15 @@ const HighestBid = ({
     },
   ]
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-2 rounded-md border border-header p-4">
-        <Shimmer />
-      </div>
-    );
-  }
-
   return (
     <div className="rounded-md border border-header ">
-      <Table data={[{}]} columns={columns} />
+      <Table
+        data={isEmpty ? [] : [{}]}
+        columns={columns}
+        emptyMessage={emptyMessage}
+        isLoading={isLoading}
+        skeletonRowCount={1}
+      />
     </div>
   )
 }

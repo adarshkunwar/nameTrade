@@ -1,6 +1,6 @@
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table'
 import Shimmer from '@/components/ui/Shimmer'
-import { forwardRef } from 'react'
+import { forwardRef, type ReactNode } from 'react'
 
 interface TableProps {
   data: any[]
@@ -8,10 +8,11 @@ interface TableProps {
   isLoading?: boolean
   skeletonRowCount?: number
   skeletonCellWidths?: Record<string, string | number>
+  emptyMessage?: ReactNode
 }
 
 const Table = forwardRef<HTMLDivElement, TableProps>(
-  ({ data, columns, isLoading, skeletonRowCount = 5, skeletonCellWidths = {} }, ref) => {
+  ({ data, columns, isLoading, skeletonRowCount = 5, skeletonCellWidths = {}, emptyMessage }, ref) => {
     const table = useReactTable({
       data,
       columns,
@@ -19,6 +20,7 @@ const Table = forwardRef<HTMLDivElement, TableProps>(
     })
     const headerGroups = table.getHeaderGroups()
     const firstHeaderGroup = headerGroups[0]
+    const colCount = firstHeaderGroup?.headers?.length ?? 0
     const getColWidth = (colId: string) => {
       const col = table.getAllColumns().find((c) => c.id === colId)
       const definedWidth = col?.getSize?.()
@@ -51,6 +53,14 @@ const Table = forwardRef<HTMLDivElement, TableProps>(
                     ))}
                   </tr>
                 ))
+              : data.length === 0 && emptyMessage
+              ? (
+                  <tr className="border-b border-header">
+                    <td colSpan={colCount} className="py-6 px-4 text-center text-white">
+                      {emptyMessage}
+                    </td>
+                  </tr>
+                )
               : table.getRowModel().rows.map((row) => (
                   <tr key={row.id} className="border-b border-header hover:bg-header transition-colors duration-150">
                     {row.getVisibleCells().map((cell) => (

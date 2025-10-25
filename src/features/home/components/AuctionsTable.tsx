@@ -1,14 +1,17 @@
 import Table from '@/components/ui/Table'
-import Shimmer from '@/components/ui/Shimmer'
 import { useGetActiveAuctions } from '@/hooks/contract/useGetActiveAuctions'
 import { formatEther } from 'viem'
 import type { NameTradeAuction } from '@/types/trade'
 import { formatDateTime } from '@/utils/date'
+import { Link } from 'react-router-dom'
+import { cryptic } from '@/lib/utils'
+import { ellipsiAtEnd } from '@/utils/username'
 
 const AuctionsTable = () => {
   const { auctions, isLoading } = useGetActiveAuctions()
+  const { urlSafeEncrypt } = cryptic()
 
-  const data = auctions.map((auction) => ({
+  const data = (auctions ?? []).map((auction) => ({
     ...auction,
     name: auction.name || auction.tokenId.toString(),
   }))
@@ -17,11 +20,22 @@ const AuctionsTable = () => {
     {
       accessorKey: 'name',
       header: 'Username',
-      cell: ({ row }: { row: { original: { name: string } } }) => (
-        <div className="flex flex-col gap-1">
-          <div className="font-semibold text-white">@{row.original.name?.split('.base')?.[0]}</div>
-        </div>
-      ),
+      cell: ({ row }: { row: { original: NameTradeAuction & { name: string } } }) => {
+        const usernameValue = row.original?.name
+        const display = `@${usernameValue?.split('.base')?.[0]}`
+        const tokenId = row.original?.tokenId
+        return (
+          <div className="flex flex-col gap-1">
+            <Link
+              to={`/username/${urlSafeEncrypt(String(tokenId ?? ''))}`}
+              state={{ username: usernameValue }}
+              className="font-semibold text-white transition "
+            >
+              {ellipsiAtEnd(display, 15)}
+            </Link>
+          </div>
+        )
+      },
     },
     {
       accessorKey: 'reservePrice',
@@ -43,20 +57,8 @@ const AuctionsTable = () => {
     },
   ]
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-2 rounded-md border border-header p-4">
-        {[...Array(5)].map((_, i) => (
-          <Shimmer key={i} />
-        ))}
-      </div>
-    )
-  }
-
   return (
-    <div className="rounded-md border border-header ">
-      <Table data={data} columns={columns} />
-    </div>
+    <Table data={data} columns={columns} isLoading={isLoading} />
   )
 }
 

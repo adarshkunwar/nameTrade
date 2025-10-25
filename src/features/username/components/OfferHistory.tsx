@@ -1,5 +1,4 @@
 import Table from '@/components/ui/Table';
-import Shimmer from '@/components/ui/Shimmer';
 import { useGetOffers } from '@/hooks/contract/useGetOffers';
 import { formatEther } from 'viem';
 import type { NameTradeOffer } from '@/types/trade';
@@ -43,27 +42,9 @@ const OfferHistory: React.FC<OfferHistoryProps> = ({ nft, tokenId }) => {
     },
   ];
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-2 rounded-md border border-header p-4">
-        {[...Array(3)].map((_, i) => (
-          <Shimmer key={i} />
-        ))}
-      </div>
-    );
-  }
-
-  if (offers.length === 0) {
-    return (
-      <div className="flex justify-center items-center rounded-md border border-header p-10">
-        <p className="text-gray">No offers yet.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="rounded-md border border-header ">
-      <Table data={offers} columns={columns} />
+      <Table data={offers} columns={columns} isLoading={isLoading} emptyMessage="No offers yet." />
     </div>
   );
 };

@@ -19,6 +19,7 @@ import { useGetAuction } from '@/hooks/contract/useGetAuction';
 import { useEthToUsd } from '@/hooks/useEthToUsd';
 import { useBaseAuth } from '@/hooks/auth/useBaseAuth';
 import { formatEther, parseEther } from 'viem';
+import Shimmer from '@/components/ui/Shimmer'
 
 const Profile = () => {
   const { VITE_SUFFIX } = ENV
@@ -64,6 +65,8 @@ const Profile = () => {
       enabled: !!decryptedTokenId,
     },
   );
+
+  const hasAuction = Boolean(auction && Number(auction.endTime) > 0)
 
   const auctionDetails = useMemo(() => {
     const formatUsd = (ethValue: bigint) => {
@@ -165,7 +168,13 @@ const Profile = () => {
     <Page>
       <div className="flex flex-col gap-5 mt-5">
         <div className="flex justify-between w-full">
-          <Heading variant="h2" title={displayUsername} color="white" fontWeight={700} />
+          {isUsernameFetching ? (
+            <div className="py-1">
+              <Shimmer height={28} width={260} rounded="lg" />
+            </div>
+          ) : (
+            <Heading variant="h2" title={displayUsername} color="white" fontWeight={700} />
+          )}
         </div>
         <div className="flex flex-col md:flex-row gap-2">
           <div className="flex flex-col gap-2">
@@ -187,14 +196,18 @@ const Profile = () => {
               minimumBid={auctionDetails.minimumBid}
               minimumBidUsd={auctionDetails.minimumBidUsd}
               isLoading={isAuctionLoading}
+              isEmpty={!isAuctionLoading && !hasAuction}
+              emptyMessage="No Auction Created"
             />
-            <PlaceABidModal
-              username={displayUsername}
-              onSubmit={handleBidSubmit}
-              loading={bidMutation.isPending}
-              disabled={bidMutation.isPending}
-            />
-            {auctionDetails.endTime && (
+            {hasAuction && (
+              <PlaceABidModal
+                username={displayUsername}
+                onSubmit={handleBidSubmit}
+                loading={bidMutation.isPending}
+                disabled={bidMutation.isPending}
+              />
+            )}
+            {hasAuction && auctionDetails.endTime && (
               <div className="flex justify-center md:justify-end">
                 <Timer targetDate={auctionDetails.endTime} />
               </div>

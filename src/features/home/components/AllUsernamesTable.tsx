@@ -8,12 +8,19 @@ import {  ellipsiAtEnd } from '@/utils/username'
 import { formatRelativeTime } from '@/utils/date'
 import { cryptic } from '@/lib/utils'
 import { useCollectionItems } from '../hooks/useCollection'
-import Button from '@/components/ui/Button'
+import PlaceAnOfferModal from '@/features/username/components/placeAnOfferModal'
+import { useNameTradeMakeNativeOffer } from '@/hooks/contract/useNameTradeOffersMutations'
+import { useBaseAuth } from '@/hooks/auth/useBaseAuth'
+import { parseEther } from 'viem'
+import { USERNAME_CONTRACT_ADDRESS } from '@/features/username/constant/config.const'
 
 const AllUsernamesTable = () => {
   const [mintSortDirection, setMintSortDirection] = useState<'ASC' | 'DESC'>('DESC')
 
   const { urlSafeEncrypt } = cryptic()
+
+  const makeOfferMutation = useNameTradeMakeNativeOffer()
+  const { switchToNameTradeChain } = useBaseAuth()
 
   const handleToggleMintSort = useCallback(() => {
     setMintSortDirection((prev) => (prev === 'DESC' ? 'ASC' : 'DESC'))
@@ -86,14 +93,51 @@ const AllUsernamesTable = () => {
         accessorKey: 'action',
         size: 100,
         header: "",
-        cell: ({ row }: any) => (
-          <span className="text-sm text-white">
-            <Button variant="secondary" size="sm">Offer</Button>
-          </span>
-        ),
+        cell: ({ row }: any) => {
+          const usernameValue = row.original?.username
+          const display = `@${usernameValue?.split('.base')?.[0]}`
+          const tokenIdStr = String(row.original?.tokenId ?? '')
+          const onSubmit = async (data: { offer: number }) => {
+            const { offer } = data
+            if (!tokenIdStr) return
+            if (!offer || Number(offer) <= 0) return
+            try {
+              await switchToNameTradeChain()
+              const tx = await makeOfferMutation
+                .mutateAsync({
+                  nft: USERNAME_CONTRACT_ADDRESS,
+                  tokenId: BigInt(tokenIdStr),
+                  value: parseEther(String(offer)),
+                })
+                .catch(async (err) => {
+                  const msg = err instanceof Error ? err.message : String(err)
+                  const needsSwitch = /switch your wallet|wallet_switchethereumchain|chain/i.test(msg)
+                  if (needsSwitch) {
+                    await switchToNameTradeChain()
+                    return await makeOfferMutation.mutateAsync({
+                      nft: USERNAME_CONTRACT_ADDRESS,
+                      tokenId: BigInt(tokenIdStr),
+                      value: parseEther(String(offer)),
+                    })
+                  }
+                  throw err
+                })
+              await tx.waitForReceipt()
+            } catch (_) {}
+          }
+          return (
+            <PlaceAnOfferModal
+              username={display}
+              onSubmit={onSubmit}
+              loading={makeOfferMutation.isPending}
+              disabled={makeOfferMutation.isPending}
+              triggerLabel="Offer"
+            />
+          )
+        },
       },
     ],
-    [handleToggleMintSort, mintSortDirection]
+    [handleToggleMintSort, mintSortDirection, makeOfferMutation.isPending, switchToNameTradeChain]
   )
 
   useEffect(() => {
