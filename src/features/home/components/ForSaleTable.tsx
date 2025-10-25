@@ -1,11 +1,13 @@
 import Table from '@/components/ui/Table'
 import Button from '@/components/ui/Button'
+import { useBuyNft } from '@/hooks/contract/useBuyNft'
 import { useGetListedNfts } from '@/hooks/contract/useGetListedNfts'
 import { formatEther } from 'viem'
 import type { NameTradeListing } from '@/types/trade'
 
 const ForSaleTable = () => {
   const { listings, isLoading } = useGetListedNfts()
+  const buyNft = useBuyNft()
 
   const data = (listings ?? []).map((listing) => ({
     ...listing,
@@ -35,9 +37,13 @@ const ForSaleTable = () => {
       accessorKey: 'action',
       size: 100,
       header: '',
-      cell: () => (
+      cell: ({ row }: { row: { original: NameTradeListing } }) => (
         <div className="flex justify-end">
-          <Button variant="secondary" size="sm">
+          <Button variant="secondary" size="sm"      onClick={() => {
+            if (row.original.nft && row.original.tokenId && row.original.price) {
+              buyNft.mutate({ nft: row.original.nft, tokenId: row.original.tokenId, price: row.original.price })
+            }
+          }}>
             Buy
           </Button>
         </div>
