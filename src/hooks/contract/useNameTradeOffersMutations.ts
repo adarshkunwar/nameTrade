@@ -101,10 +101,16 @@ export const useNameTradeUpdateOffer = (
       const nft = normalizeAddress(variables.nft)
       const tokenId = toBigInt(variables.tokenId)
       const offerer = normalizeAddress(variables.offerer)
+      const tokenIdStr = tokenId.toString()
       return [
+        ['nameTrade', resolvedNetwork, 'getAllOffersForNft', nft, tokenIdStr],
         ['nameTrade', resolvedNetwork, 'getOffer', nft, tokenId, offerer],
         ['nameTrade', resolvedNetwork, 'offers', nft, tokenId, offerer],
         ['nameTrade', resolvedNetwork, 'counterPrice', nft, tokenId, offerer],
+        // String-keyed variants
+        ['nameTrade', resolvedNetwork, 'getOffer', nft, tokenIdStr, offerer],
+        ['nameTrade', resolvedNetwork, 'offers', nft, tokenIdStr, offerer],
+        ['nameTrade', resolvedNetwork, 'counterPrice', nft, tokenIdStr, offerer],
       ]
     },
   })

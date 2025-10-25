@@ -21,6 +21,7 @@ import { useBaseAuth } from '@/hooks/auth/useBaseAuth';
 import { formatEther, parseEther } from 'viem';
 import { useQueryClient } from '@tanstack/react-query'
 import Shimmer from '@/components/ui/Shimmer'
+import { resolveDefaultNetwork } from '@/config/contract/config'
 
 const Profile = () => {
   const { VITE_SUFFIX } = ENV
@@ -59,6 +60,7 @@ const Profile = () => {
   const bidMutation = useNameTradeBid();
   const { ethToUsdRate } = useEthToUsd();
   const queryClient = useQueryClient()
+  const network = resolveDefaultNetwork()
 
   const { auction, isLoading: isAuctionLoading } = useGetAuction(
     '0x03c4738Ee98aE44591e1A4A4F3CaB6641d95DD9a',
@@ -121,22 +123,18 @@ const Profile = () => {
 
     try {
       await switchToNameTradeChain();
-      console.log('[handleBidSubmit] submitting bid', { tokenId, bid });
       const tx = await bidMutation.mutateAsync({
         nft: '0x03c4738Ee98aE44591e1A4A4F3CaB6641d95DD9a',
         tokenId: tokenIdBigInt!,
         value: parseEther(String(bid)),
       });
 
-      const receipt = await tx.waitForReceipt();
-      console.log('[handleBidSubmit] receipt', receipt);
+      await tx.waitForReceipt();
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['nameTrade', 'getAuction'] }),
-        queryClient.invalidateQueries({ queryKey: ['nameTrade', 'auctions'] }),
+        queryClient.invalidateQueries({ queryKey: ['nameTrade', network, 'getAuction', '0x03c4738Ee98aE44591e1A4A4F3CaB6641d95DD9a', (tokenIdBigInt!).toString()] }),
+        queryClient.invalidateQueries({ queryKey: ['nameTrade', network, 'auctions'] }),
       ])
     } catch (e) {
-      // Optional: surface error via toast
-      console.error('[handleBidSubmit] error', e);
       // Optional: surface error via toast
     }
   };
@@ -148,7 +146,6 @@ const Profile = () => {
 
     try {
       await switchToNameTradeChain();
-      console.log('[handleOfferSubmit] makeNativeOffer submit', { nft: USERNAME_CONTRACT_ADDRESS, tokenId, offer });
       const tx = await makeOfferMutation
         .mutateAsync({
           nft: USERNAME_CONTRACT_ADDRESS,
@@ -168,16 +165,14 @@ const Profile = () => {
           }
           throw err;
         });
-      const receipt = await tx.waitForReceipt();
-      console.log('[handleOfferSubmit] receipt', receipt);
+      await tx.waitForReceipt();
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['nameTrade', 'getAllOffersForNft'] }),
-        queryClient.invalidateQueries({ queryKey: ['nameTrade', 'getOffer'] }),
-        queryClient.invalidateQueries({ queryKey: ['nameTrade', 'offers'] }),
+        queryClient.invalidateQueries({ queryKey: ['nameTrade', network, 'getAllOffersForNft', USERNAME_CONTRACT_ADDRESS, (tokenIdBigInt!).toString()] }),
+        queryClient.invalidateQueries({ queryKey: ['nameTrade', network, 'getOffer', USERNAME_CONTRACT_ADDRESS, (tokenIdBigInt!).toString()] }),
+        queryClient.invalidateQueries({ queryKey: ['nameTrade', network, 'offers'] }),
       ])
     } catch (e) {
       // Optional: surface error via toast
-      console.error('[handleOfferSubmit] error', e);
     }
   };
 

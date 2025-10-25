@@ -79,11 +79,20 @@ export const mapOffer = (raw: any): NameTradeOffer | null => {
       return null
     }
 
+    const normalizedOfferer = normalizeAddress(offerer)
+    const normalizedNft = normalizeAddress(nft)
+    const normalizedAmount = toBigInt(amount ?? 0)
+
+    // If the offer is effectively empty/canceled, drop it
+    if (normalizedAmount === 0n || normalizedOfferer === ZERO_ADDRESS) {
+      return null
+    }
+
     return {
-      nft: normalizeAddress(nft),
+      nft: normalizedNft,
       tokenId: toBigInt(tokenId),
-      offerer: normalizeAddress(offerer),
-      amount: toBigInt(amount ?? 0),
+      offerer: normalizedOfferer,
+      amount: normalizedAmount,
       expiry: toBigInt(expiry ?? 0),
       offerType: Number(offerType ?? 0) as NameTradeOfferType,
       offerNfts: offerNfts.map((addr) => normalizeAddress(addr)),

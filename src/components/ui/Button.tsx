@@ -17,7 +17,7 @@ export interface ButtonType extends ButtonHTMLAttributes<HTMLButtonElement> {
 const variantStyles: Record<ButtonVariant, string> = {
   default: 'bg-primary text-white hover:bg-primary/80 active:bg-primary/90',
   secondary: 'bg-secondary text-white hover:bg-secondary/80 active:bg-secondary/90',
-  outline: 'bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 active:bg-gray-100',
+  outline: 'bg-transparent border border-gray-300 text-white hover:text-black hover:bg-gray-50 active:bg-gray-100',
   ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 active:bg-gray-200',
   danger: 'bg-red text-white hover:bg-red/80 active:bg-red/90',
 }
