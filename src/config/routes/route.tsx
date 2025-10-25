@@ -1,4 +1,3 @@
-import { Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { RouteList } from './routesList'
 import Layout from '@/components/layout/Layout'
@@ -16,14 +15,13 @@ const renderRoutes = (routes: any) => {
 }
 
 const RoutesContainer = () => (
-  <Suspense fallback={<div>Loading...</div>}>
+
     <Routes>
       <Route path="/" element={<Layout />}>
         {renderRoutes(RouteList)}
       </Route>
       <Route path="*" element={<Page404 />} />
     </Routes>
-  </Suspense>
 )
 
 export default RoutesContainer

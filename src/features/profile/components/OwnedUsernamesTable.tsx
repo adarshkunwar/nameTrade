@@ -38,7 +38,7 @@ const OwnedUsernamesTable = ({
             <Link
               to={`/username/${row.original.token_id}`}
               state={{ username: row.original.domain }}
-              className="font-semibold text-white transition hover:text-primary"
+              className="font-semibold text-white transition"
             >
               @{row.original.domain.split('.base')[0]}
             </Link>
@@ -78,7 +78,7 @@ const OwnedUsernamesTable = ({
   const showEmpty = !isLoading && !error && data.length === 0
 
   return (
-    <div className="rounded-md border border-header">
+    <div className="rounded-md  border-header">
       {showSkeleton && <OwnedUsernamesSkeleton />}
 
       {error && (
@@ -88,7 +88,7 @@ const OwnedUsernamesTable = ({
           <button
             type="button"
             onClick={onRetry}
-            className="self-start rounded border border-primary px-3 py-1 text-sm text-white transition hover:bg-primary/20"
+            className="self-start rounded border border-primary px-3 py-1 text-sm text-white transition"
           >
             Retry
           </button>
