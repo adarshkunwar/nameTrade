@@ -116,7 +116,7 @@ export const useGetListedNfts = (options?: { network?: NameTradeNetwork; rpcUrlO
             }
 
             const name = await getNameFromTokenId(tokenId.toString());
-            results.push({ ...listing, offers, name });
+            results.push({ ...listing, nft, tokenId, offers, name });
           } catch (listingErr) {
             // Silently fail if a single listing can't be fetched
           }
